@@ -16,3 +16,5 @@ check_pwd.php
 create_test_user.php
 .opencode
 .mimocode
+config/reference.php
+src/Controller/.gitignore
