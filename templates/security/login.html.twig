@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login | KanjiReview{% endblock %}
+
+{% block sidebar %}{% endblock %}
+{% block topbar %}{% endblock %}
+{% block mobile_nav %}{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link rel="stylesheet" href="{{ asset('css/pages/auth.css') }}">
+{% endblock %}
+
+{% block body_class %}app-main--full{% endblock %}
+
+{% block body %}
+  <div class="app-main--full auth-page">
+    <div class="auth-card">
+      <div class="auth-card__header">
+        <div class="auth-card__logo">K</div>
+        <h1>KanjiReview</h1>
+        <p class="auth-card__subtitle">Sign in to continue.</p>
+      </div>
+
+      {% for message in app.flashes('success') %}
+        <div class="auth-flash auth-flash--success">{{ message }}</div>
+      {% endfor %}
+      {% for message in app.flashes('error') %}
+        <div class="auth-flash">{{ message }}</div>
+      {% endfor %}
+
+      {% if error %}
+        <div class="auth-flash">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+      {% endif %}
+
+      <form action="{{ path('app_login') }}" method="post" class="auth-form">
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="_username" value="{{ last_username }}" class="form-input" placeholder="you@email.com" required autofocus>
+        </div>
+
+        <div class="form-field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="_password" class="form-input" placeholder="Your password" required>
+        </div>
+
+        <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;overflow:hidden;">
+        <input type="email" name="confirm_email" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;overflow:hidden;">
+
+        <button type="submit" class="btn btn--primary">Sign In</button>
+      </form>
+
+      <div class="auth-links">
+        <span>No account?</span>
+        <a href="{{ path('app_register') }}">Create one</a>
+        <span style="display:inline-block;margin:0 6px;color:var(--color-outline-variant)">·</span>
+        <a href="{{ path('app_forgot_password') }}">Forgot password?</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

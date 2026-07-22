@@ -1,0 +1,58 @@
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar__brand">
+    <h1>Nihongo</h1>
+    <p>Kanji Review</p>
+  </div>
+
+  <nav class="sidebar__nav">
+    <a href="{{ path('app_home') }}" class="sidebar__link {% if app.current_route == 'app_home' %}sidebar__link--active{% endif %}">
+      <i class="bi bi-grid-1x2"></i>
+      <span class="sidebar__label">Dashboard</span>
+    </a>
+    <a href="{{ path('app_review') }}" class="sidebar__link {% if app.current_route == 'app_review' %}sidebar__link--active{% endif %}">
+      <i class="bi bi bi-eye"></i>
+      <span class="sidebar__label">Review</span>
+    </a>
+    <a href="{{ path('app_kanji_list') }}" class="sidebar__link {% if app.current_route == 'app_kanji_list' %}sidebar__link--active{% endif %}">
+      <i class="bi bi-book"></i>
+      <span class="sidebar__label">Kanji</span>
+    </a>
+    <a href="#" class="sidebar__link">
+      <i class="bi bi-trophy"></i>
+      <span class="sidebar__label">Achievements</span>
+    </a>
+  </nav>
+
+  <div class="sidebar__footer">
+    <button class="sidebar__theme-btn" id="theme-toggle">
+      <i class="bi bi-moon-stars" id="theme-toggle-icon"></i>
+      <span id="theme-toggle-label">Dark Mode</span>
+    </button>
+
+    {% if app.user %}
+      <a href="{{ path('app_profile') }}" class="sidebar__user-info" style="text-decoration:none">
+        <div class="sidebar__user-avatar">
+          {% if app.user.avatarPath %}
+            <img src="{{ asset(app.user.avatarPath) }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">
+          {% else %}
+            {{ app.user.name|first|upper }}
+          {% endif %}
+        </div>
+        <span class="sidebar__label sidebar__user-name">{{ app.user.name }}</span>
+      </a>
+      <a href="{{ path('app_logout') }}" class="sidebar__link">
+        <i class="bi bi-box-arrow-right"></i>
+        <span class="sidebar__label">Sign Out</span>
+      </a>
+    {% else %}
+      <a href="{{ path('app_login') }}" class="sidebar__link">
+        <i class="bi bi-box-arrow-in-right"></i>
+        <span class="sidebar__label">Sign In</span>
+      </a>
+    {% endif %}
+  </div>
+
+  <button class="sidebar__toggle" id="sidebar-toggle">
+    <i class="bi bi-chevron-left" id="sidebar-toggle-icon"></i>
+  </button>
+</aside>

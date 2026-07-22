@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profile | KanjiReview{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link rel="stylesheet" href="{{ asset('css/pages/profile.css') }}">
+{% endblock %}
+
+{% block body %}
+  <div class="profile__banner"></div>
+
+  <section class="profile__header">
+    <a href="{{ path('app_profile_edit') }}" class="profile__avatar-wrap">
+      <div class="profile__avatar">
+        {% if app.user.avatarPath %}
+          <img src="{{ asset(app.user.avatarPath) }}" alt="Avatar">
+        {% else %}
+          {{ app.user.name|first|upper }}
+        {% endif %}
+      </div>
+      <div class="profile__avatar-overlay">
+        <i class="bi bi-camera"></i>
+      </div>
+    </a>
+    <div class="profile__header-info">
+      <h2 class="page-title">{{ app.user.name }}</h2>
+      <p class="page-subtitle">{{ app.user.email }}</p>
+      <div class="profile__badge-group">
+        {% if app.user.totpEnabled %}
+          <span class="badge badge--primary"><i class="bi bi-shield-check"></i> 2FA Active</span>
+        {% else %}
+          <span class="badge"><i class="bi bi-shield"></i> 2FA Inactive</span>
+        {% endif %}
+        {% if app.user.isVerified %}
+          <span class="badge badge--primary"><i class="bi bi-patch-check"></i> Verified</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="profile__header-actions">
+      <a href="{{ path('app_profile_edit') }}" class="btn btn--primary btn--sm">
+        <i class="bi bi-pencil"></i> Edit
+      </a>
+    </div>
+  </section>
+
+  <div class="profile__stats">
+    <article class="stat-card">
+      <div class="stat-card__icon"><i class="bi bi-check-circle"></i></div>
+      <span class="stat-card__value">{{ reviewedToday }}</span>
+      <span class="stat-card__label">Reviewed today</span>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon"><i class="bi bi-fire"></i></div>
+      <span class="stat-card__value">{{ streak }}</span>
+      <span class="stat-card__label">Day streak</span>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon"><i class="bi bi-clock"></i></div>
+      <span class="stat-card__value">{{ dueCount }}</span>
+      <span class="stat-card__label">Due</span>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon"><i class="bi bi-book"></i></div>
+      <span class="stat-card__value">{{ totalKanji }}</span>
+      <span class="stat-card__label">Total kanji</span>
+    </article>
+  </div>
+
+  <div class="profile__section">
+    <h3 class="section-title"><i class="bi bi-gear"></i> Account</h3>
+    <div class="profile__info">
+      <div class="profile__row">
+        <div class="profile__row-icon"><i class="bi bi-envelope"></i></div>
+        <div class="profile__row-content">
+          <span class="profile__row-label">Email</span>
+          <span class="profile__row-value">{{ app.user.email }}</span>
+        </div>
+      </div>
+      <div class="profile__row">
+        <div class="profile__row-icon"><i class="bi bi-patch-check"></i></div>
+        <div class="profile__row-content">
+          <span class="profile__row-label">Verified</span>
+          <span class="profile__row-value">{{ app.user.isVerified ? 'Yes' : 'No' }}</span>
+        </div>
+      </div>
+      <div class="profile__row">
+        <div class="profile__row-icon"><i class="bi bi-calendar"></i></div>
+        <div class="profile__row-content">
+          <span class="profile__row-label">Member since</span>
+          <span class="profile__row-value">{{ app.user.createdAt|date('M d, Y') }}</span>
+        </div>
+      </div>
+      <div class="profile__row">
+        <div class="profile__row-icon"><i class="bi bi-shield-lock"></i></div>
+        <div class="profile__row-content">
+          <span class="profile__row-label">Two-factor authentication</span>
+          <span class="profile__row-value">
+            {% if app.user.totpEnabled %}
+              Active
+            {% else %}
+              <a href="{{ path('app_2fa_setup') }}" style="color:var(--color-primary)">Set up</a>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

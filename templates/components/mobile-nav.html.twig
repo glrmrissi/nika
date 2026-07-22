@@ -1,0 +1,29 @@
+<nav class="mobile-nav">
+  <a href="{{ path('app_home') }}" class="mobile-nav__link {% if app.current_route == 'app_home' %}mobile-nav__link--active{% endif %}">
+    <i class="bi bi-grid-1x2"></i>
+    <span>Dashboard</span>
+  </a>
+  <a href="{{ path('app_review') }}" class="mobile-nav__link {% if app.current_route == 'app_review' %}mobile-nav__link--active{% endif %}">
+    <i class="bi bi-eye"></i>
+    <span>Review</span>
+  </a>
+  <a href="{{ path('app_kanji_list') }}" class="mobile-nav__link {% if app.current_route == 'app_kanji_list' %}mobile-nav__link--active{% endif %}">
+    <i class="bi bi-book"></i>
+    <span>Kanji</span>
+  </a>
+  {% if app.user %}
+    <a href="{{ path('app_profile') }}" class="mobile-nav__link">
+      <i class="bi bi-person"></i>
+      <span>Profile</span>
+    </a>
+    <a href="{{ path('app_logout') }}" class="mobile-nav__link">
+      <i class="bi bi-box-arrow-right"></i>
+      <span>Sign Out</span>
+    </a>
+  {% else %}
+    <a href="{{ path('app_login') }}" class="mobile-nav__link">
+      <i class="bi bi-box-arrow-in-right"></i>
+      <span>Sign In</span>
+    </a>
+  {% endif %}
+</nav>

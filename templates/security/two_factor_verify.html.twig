@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Two-Factor Auth | KanjiReview{% endblock %}
+
+{% block sidebar %}{% endblock %}
+{% block topbar %}{% endblock %}
+{% block mobile_nav %}{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link rel="stylesheet" href="{{ asset('css/pages/auth.css') }}">
+{% endblock %}
+
+{% block body_class %}app-main--full{% endblock %}
+
+{% block body %}
+  <div class="app-main--full auth-page">
+    <div class="auth-card">
+      <div class="auth-card__header">
+        <div class="auth-card__logo">K</div>
+        <h1>Two-Factor Auth</h1>
+        <p class="auth-card__subtitle">Enter the code from your authenticator app.</p>
+      </div>
+
+      <form action="{{ path('2fa_login_check') }}" method="post" class="auth-form">
+        <div class="form-field">
+          <label for="code">6-digit code</label>
+          <input type="text" id="code" name="_auth_code" class="form-input" placeholder="000000" inputmode="numeric" autocomplete="off" autofocus required>
+        </div>
+
+        <button type="submit" class="btn btn--primary">Verify</button>
+      </form>
+
+      <div class="auth-links">
+        <a href="{{ path('app_logout') }}">Sign out</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Kanji | KanjiReview{% endblock %}
+
+{% block stylesheets %}
+<style>
+.kanji-browser { max-width: 800px; margin: 0 auto; }
+.kanji-browser__header { margin-bottom: 24px; }
+.kanji-browser__filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.kanji-browser__filter { padding: 6px 16px; border-radius: var(--radius-full); border: 1px solid var(--color-outline-variant); background: var(--color-surface-container-lowest); font-size: 13px; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); }
+.kanji-browser__filter:hover { border-color: var(--color-primary); }
+.kanji-browser__filter--active { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+.kanji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+.kanji-grid__item { background: var(--color-surface-container-low); border-radius: var(--radius-md); padding: 16px 8px; text-align: center; cursor: pointer; transition: background var(--transition-fast); border: 1px solid transparent; }
+.kanji-grid__item:hover { background: var(--color-surface-container); border-color: var(--color-outline-variant); }
+.kanji-grid__char { font-size: 28px; font-weight: 500; line-height: 1.2; }
+.kanji-grid__reading { font-size: 12px; color: var(--color-secondary); margin-top: 4px; }
+.kanji-grid__meaning { font-size: 12px; color: var(--color-on-surface-variant); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+.pagination__btn { padding: 6px 14px; border-radius: var(--radius-md); border: 1px solid var(--color-outline-variant); font-size: 13px; font-weight: 500; background: var(--color-surface-container-lowest); cursor: pointer; transition: all var(--transition-fast); }
+.pagination__btn:hover { border-color: var(--color-primary); }
+.pagination__btn--active { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+.pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.kanji-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; padding: 24px; }
+.kanji-modal--open { display: flex; }
+.kanji-modal__content { background: var(--color-surface-container-lowest); border-radius: var(--radius-xl); padding: 32px; max-width: 400px; width: 100%; text-align: center; position: relative; }
+.kanji-modal__close { position: absolute; top: 12px; right: 12px; font-size: 20px; color: var(--color-secondary); cursor: pointer; }
+.kanji-modal__char { font-size: 64px; font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+.kanji-modal__reading { display: flex; justify-content: center; gap: 24px; margin-bottom: 8px; }
+.kanji-modal__onyomi { color: #ff9f0a; }
+.kanji-modal__kunyomi { color: #34c759; }
+.kanji-modal__meanings { font-size: 16px; color: var(--color-on-surface); margin-bottom: 8px; }
+.kanji-modal__meta { font-size: 12px; color: var(--color-secondary); }
+.kanji-browser__loading { text-align: center; padding: 40px; color: var(--color-secondary); }
+@media (max-width: 480px) { .kanji-grid { grid-template-columns: repeat(3, 1fr); } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="kanji-browser">
+  <div class="kanji-browser__header">
+    <h2 class="page-title">Kanji</h2>
+    <p class="page-subtitle">Navegue pelos kanji JLPT N5 a N1.</p>
+  </div>
+
+  <div class="kanji-browser__filters" id="filters">
+    <button class="kanji-browser__filter kanji-browser__filter--active" data-level="">Todos</button>
+    <button class="kanji-browser__filter" data-level="N5">N5</button>
+    <button class="kanji-browser__filter" data-level="N4">N4</button>
+    <button class="kanji-browser__filter" data-level="N3">N3</button>
+    <button class="kanji-browser__filter" data-level="N2">N2</button>
+    <button class="kanji-browser__filter" data-level="N1">N1</button>
+  </div>
+
+  <div id="kanji-grid" class="kanji-grid"></div>
+
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<div class="kanji-modal" id="kanji-modal">
+  <div class="kanji-modal__content">
+    <span class="kanji-modal__close" onclick="closeModal()">&times;</span>
+    <div class="kanji-modal__char" id="modal-char"></div>
+    <div class="kanji-modal__reading">
+      <span class="kanji-modal__onyomi" id="modal-onyomi"></span>
+      <span class="kanji-modal__kunyomi" id="modal-kunyomi"></span>
+    </div>
+    <div class="kanji-modal__meanings" id="modal-meanings"></div>
+    <div class="kanji-modal__meta" id="modal-meta"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+var currentPage = 1;
+var currentLevel = '';
+var totalPages = 1;
+
+function getCacheKey(page, level) {
+  return 'kanji_list_' + page + '_' + (level || 'all');
+}
+
+function getFromCache(page, level) {
+  var key = getCacheKey(page, level);
+  var cached = localStorage.getItem(key);
+  if (!cached) return null;
+  try {
+    var data = JSON.parse(cached);
+    if (Date.now() - data.ts < 3600000) return data.payload;
+  } catch(e) {}
+  localStorage.removeItem(key);
+  return null;
+}
+
+function setCache(page, level, payload) {
+  var key = getCacheKey(page, level);
+  localStorage.setItem(key, JSON.stringify({ ts: Date.now(), payload: payload }));
+}
+
+function fetchKanji(page, level) {
+  var cached = getFromCache(page, level);
+  if (cached) {
+    renderKanji(cached);
+    return;
+  }
+
+  var grid = document.getElementById('kanji-grid');
+  grid.innerHTML = '<div class="kanji-browser__loading">Carregando...</div>';
+
+  var params = new URLSearchParams({ page: page, limit: 50 });
+  if (level) params.set('level', level);
+
+  fetch('/api/kanji?' + params.toString())
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      setCache(page, level, data);
+      renderKanji(data);
+    });
+}
+
+function renderKanji(data) {
+  var grid = document.getElementById('kanji-grid');
+  var pagination = document.getElementById('pagination');
+
+  currentPage = data.page;
+  totalPages = data.pages;
+
+  if (!data.data || data.data.length === 0) {
+    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--color-secondary);padding:40px;">No kanji found.</p>';
+    pagination.innerHTML = '';
+    return;
+  }
+
+  var html = '';
+  data.data.forEach(function (k) {
+    var onyomi = k.onyomi || '';
+    var meaning = k.meanings ? k.meanings.split(',')[0].trim() : '';
+    html += '<div class="kanji-grid__item" onclick="showDetail(' + k.id + ',\'' + k.character + '\',\'' + onyomi.replace(/'/g, "\\'") + '\',\'' + (k.kunyomi || '').replace(/'/g, "\\'") + '\',\'' + meaning.replace(/'/g, "\\'") + '\',\'' + (k.jlptLevel || '') + '\')">';
+    html += '<div class="kanji-grid__char">' + k.character + '</div>';
+    html += '<div class="kanji-grid__reading">' + onyomi + '</div>';
+    html += '<div class="kanji-grid__meaning">' + meaning + '</div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+
+  var phtml = '';
+  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled' : '') + '>Anterior</button>';
+  for (var i = 1; i <= Math.min(totalPages, 10); i++) {
+    phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+  }
+  if (totalPages > 10) {
+    phtml += '<span style="padding:6px 4px;color:var(--color-secondary);">...</span>';
+  }
+  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled' : '') + '>Próximo</button>';
+  pagination.innerHTML = phtml;
+}
+
+function goToPage(page) {
+  if (page < 1 || page > totalPages) return;
+  currentPage = page;
+  fetchKanji(page, currentLevel);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showDetail(id, char, onyomi, kunyomi, meanings, level) {
+  document.getElementById('modal-char').textContent = char;
+  document.getElementById('modal-onyomi').textContent = '\u97F3: ' + onyomi;
+  document.getElementById('modal-kunyomi').textContent = '\u8A13: ' + kunyomi;
+  document.getElementById('modal-meanings').textContent = meanings;
+  document.getElementById('modal-meta').textContent = level || '';
+  document.getElementById('kanji-modal').classList.add('kanji-modal--open');
+}
+
+function closeModal() {
+  document.getElementById('kanji-modal').classList.remove('kanji-modal--open');
+}
+
+document.getElementById('kanji-modal').addEventListener('click', function (e) {
+  if (e.target === this) closeModal();
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  var filterBtns = document.querySelectorAll('.kanji-browser__filter');
+  filterBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      filterBtns.forEach(function (b) { b.classList.remove('kanji-browser__filter--active'); });
+      this.classList.add('kanji-browser__filter--active');
+      currentLevel = this.getAttribute('data-level') || '';
+      currentPage = 1;
+      fetchKanji(currentPage, currentLevel);
+    });
+  });
+
+  fetchKanji(1, '');
+});
+</script>
+{% endblock %}

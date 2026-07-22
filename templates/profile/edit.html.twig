@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Profile | KanjiReview{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link rel="stylesheet" href="{{ asset('css/pages/profile.css') }}">
+{% endblock %}
+
+{% block body %}
+  <div class="profile__edit">
+    <div class="profile__edit-header">
+      <a href="{{ path('app_profile') }}" class="profile__back"><i class="bi bi-arrow-left"></i></a>
+      <h2 class="page-title">Edit Profile</h2>
+    </div>
+
+    {{ form_start(form, {attr: {novalidate: true, class: 'profile__form'}}) }}
+      <div class="profile__upload-area" id="upload-area">
+        <div class="profile__upload-preview-wrap">
+          <div class="profile__upload-preview" id="avatar-preview">
+            {% if app.user.avatarPath %}
+              <img src="{{ asset(app.user.avatarPath) }}" alt="Avatar">
+            {% else %}
+              {{ app.user.name|first|upper }}
+            {% endif %}
+          </div>
+          <label for="profile_form_avatar" class="profile__upload-overlay">
+            <i class="bi bi-camera"></i>
+          </label>
+          {% if app.user.avatarPath %}
+            <form method="post" action="{{ path('app_profile_avatar_remove') }}" style="display:contents" onsubmit="return confirm('Remove avatar?')">
+              <button type="submit" class="profile__upload-remove" title="Remove photo">
+                <i class="bi bi-x"></i>
+              </button>
+            </form>
+          {% endif %}
+        </div>
+        {{ form_widget(form.avatar, {attr: {class: 'profile__file-input', 'data-action': 'change->preview'}}) }}
+      </div>
+      {{ form_errors(form.avatar) }}
+
+      <div class="profile__dropzone" id="dropzone">
+        <div class="profile__dropzone-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+        <div class="profile__dropzone-text">Drag a photo here or click to choose</div>
+        <div class="profile__dropzone-hint">JPEG, PNG or WebP • Max 2MB</div>
+      </div>
+
+      <div class="profile__field">
+        {{ form_label(form.name, 'Name', {label_attr: {class: 'profile__label'}}) }}
+        {{ form_widget(form.name, {attr: {class: 'profile__input', placeholder: 'Your name'}}) }}
+        {{ form_errors(form.name) }}
+      </div>
+
+      <div class="profile__field">
+        {{ form_label(form.timezone, 'Timezone', {label_attr: {class: 'profile__label'}}) }}
+        {{ form_widget(form.timezone, {attr: {class: 'profile__input'}}) }}
+        {{ form_errors(form.timezone) }}
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--full">Save changes</button>
+    {{ form_end(form) }}
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (function() {
+      var input = document.getElementById('profile_form_avatar');
+      var preview = document.getElementById('avatar-preview');
+      var dropzone = document.getElementById('dropzone');
+
+      function updatePreview(file) {
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          preview.innerHTML = '<img src="' + ev.target.result + '" alt="Preview">';
+          dropzone.querySelector('.profile__dropzone-text').textContent = file.name;
+          dropzone.querySelector('.profile__dropzone-icon i').className = 'bi bi-check-circle-fill';
+          dropzone.classList.add('profile__dropzone--has-file');
+        };
+        reader.readAsDataURL(file);
+      }
+
+      input.addEventListener('change', function() {
+        updatePreview(this.files[0]);
+      });
+
+      ['dragenter', 'dragover'].forEach(function(e) {
+        dropzone.addEventListener(e, function(ev) {
+          ev.preventDefault();
+          dropzone.classList.add('profile__dropzone--dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(function(e) {
+        dropzone.addEventListener(e, function(ev) {
+          ev.preventDefault();
+          dropzone.classList.remove('profile__dropzone--dragover');
+        });
+      });
+
+      dropzone.addEventListener('drop', function(ev) {
+        var file = ev.dataTransfer.files[0];
+        if (file) {
+          input.files = ev.dataTransfer.files;
+          updatePreview(file);
+        }
+      });
+
+      dropzone.addEventListener('click', function() {
+        input.click();
+      });
+    })();
+  </script>
+{% endblock %}

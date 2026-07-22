@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard | KanjiReview{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="{{ asset('css/pages/dashboard.css') }}">
+{% endblock %}
+
+{% block body %}
+  {% if loginSuccess %}
+    <div class="login-overlay" id="login-overlay">
+      <img src="{{ asset('assets/anime-white-version.png') }}" alt="" class="login-overlay__img login-overlay__img--dark" width="280" height="280">
+      <img src="{{ asset('assets/anime-black-version.png') }}" alt="" class="login-overlay__img login-overlay__img--light" width="280" height="280">
+    </div>
+  {% endif %}
+  <section class="dashboard__welcome">
+    <h2 class="page-title">Hi{% if userName %}, {{ userName }}{% endif %}</h2>
+    <p class="page-subtitle">Here is your progress today.</p>
+  </section>
+
+  <div class="dashboard__bento">
+
+    <article class="stat-card bento--mastery">
+      <div class="mastery__header">
+        <div>
+          <h3 class="section-title">Mastery Overview</h3>
+          <p class="page-subtitle" style="font-size:15px;">Current progress across all levels.</p>
+        </div>
+        <span class="badge badge--primary">Total: {{ totalCount }} kanji</span>
+      </div>
+      <div class="mastery__progress">
+        {% for level in byLevel %}
+          <div class="mastery__row">
+            <div class="mastery__row-header">
+              <span>Kanji {{ level.jlptLevel }}</span>
+              <span>{{ level.total }} kanji</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar__fill" style="width: {{ level.percentage }}%; opacity: {{ 0.4 + (level.percentage / 100) * 0.6 }};"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </article>
+
+    <article class="stat-card bento--streak">
+      <div class="streak__content">
+        <div class="streak__glow"></div>
+        <i class="bi bi-fire streak__icon"></i>
+        <h3 class="streak__count">{{ streak }}</h3>
+        <p class="streak__label">Day Streak</p>
+        <div class="streak__days">
+          <div class="streak__day {% if streak > 2 %}streak__day--past{% else %}streak__day--future{% endif %}">{{ streakDays[0] }}</div>
+          <div class="streak__day {% if streak > 1 %}streak__day--past{% else %}streak__day--future{% endif %}">{{ streakDays[1] }}</div>
+          <div class="streak__day streak__day--today">{{ streakDays[2] }}</div>
+          <div class="streak__day streak__day--future">{{ streakDays[3] }}</div>
+          <div class="streak__day streak__day--future">{{ streakDays[4] }}</div>
+        </div>
+      </div>
+    </article>
+
+    <article class="stat-card bento--recent">
+      <div class="recent__header">
+        <h3 class="section-title">Recently Studied</h3>
+        <a href="#" class="btn btn--sm" style="color:var(--color-primary);font-weight:500;">View All</a>
+      </div>
+      <div class="card-grid">
+        {% for item in recent %}
+          <div class="kanji-card">
+            <span class="kanji-card__char">{{ item.character }}</span>
+            <span class="kanji-card__label">{{ item.meaning }}</span>
+            <div class="kanji-card__progress">
+              <div class="progress-bar__fill" style="width: {{ item.mastery }}%;"></div>
+            </div>
+          </div>
+        {% else %}
+          <p style="grid-column:1/-1;color:var(--color-secondary);">No kanji studied yet.</p>
+        {% endfor %}
+      </div>
+    </article>
+
+    <article class="stat-card bento--ranking">
+      <div class="ranking__header">
+        <h3 class="section-title">Reviews Today</h3>
+        <i class="bi bi-arrow-repeat" style="color:var(--color-secondary);font-size:20px;"></i>
+      </div>
+      <div class="ranking__list" style="padding:24px 0;text-align:center;">
+        <span style="font-size:48px;font-weight:700;font-family:var(--font-heading);color:var(--color-primary);">{{ dueCount }}</span>
+        <p style="color:var(--color-secondary);margin-top:4px;">kanji due</p>
+        <div style="margin-top:8px;font-size:14px;color:var(--color-secondary);">
+          {{ reviewedToday }} reviewed today &middot; {{ streak }} day streak
+        </div>
+        <a href="{{ path('app_review') }}" class="btn btn--primary" style="margin-top:20px;width:100%;">
+          <i class="bi bi-eye"></i> Review Now
+        </a>
+      </div>
+    </article>
+
+  </div>
+{% endblock %}

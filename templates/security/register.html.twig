@@ -1,0 +1,186 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Account | KanjiReview{% endblock %}
+
+{% block sidebar %}{% endblock %}
+{% block topbar %}{% endblock %}
+{% block mobile_nav %}{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link rel="stylesheet" href="{{ asset('css/pages/auth.css') }}">
+{% endblock %}
+
+{% block body_class %}app-main--full{% endblock %}
+
+{% block body %}
+  <div class="app-main--full auth-page">
+    <div class="auth-card">
+      <div class="auth-card__header">
+        <div class="auth-card__logo">K</div>
+        <h1>Create Account</h1>
+        <p class="auth-card__subtitle">Start reviewing kanji today.</p>
+      </div>
+
+      {{ form_start(form, {attr: {class: 'auth-form', novalidate: true, id: 'register-form'}}) }}
+        <div class="form-field">
+          <label for="{{ form.name.vars.id }}">Name</label>
+          {{ form_widget(form.name, {attr: {class: 'form-input', autofocus: true, placeholder: 'Your name', 'data-field': 'name'}}) }}
+          <div class="field-error" id="error-name"></div>
+          {{ form_errors(form.name) }}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.email.vars.id }}">Email</label>
+          {{ form_widget(form.email, {attr: {class: 'form-input', placeholder: 'you@email.com', 'data-field': 'email'}}) }}
+          <div class="field-error" id="error-email"></div>
+          {{ form_errors(form.email) }}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.password.first.vars.id }}">Password</label>
+          <div class="password-wrapper">
+            {{ form_widget(form.password.first, {attr: {class: 'form-input', placeholder: 'Create a password'}}) }}
+            <button type="button" class="password-toggle" onclick="togglePassword()" tabindex="-1" aria-label="Toggle password visibility">
+              <svg id="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <div class="field-error" id="error-password"></div>
+          {{ form_errors(form.password.first) }}
+
+          <div class="password-strength" id="password-strength">
+            <div class="strength-bar">
+              <div class="strength-bar__fill" id="strength-fill"></div>
+            </div>
+            <span class="strength-label" id="strength-label"></span>
+          </div>
+
+          <ul class="password-rules" id="password-rules">
+            <li data-rule="length">6+ characters</li>
+            <li data-rule="upper">One uppercase letter</li>
+            <li data-rule="lower">One lowercase letter</li>
+            <li data-rule="number">One number</li>
+          </ul>
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.password.second.vars.id }}">Confirm password</label>
+          {{ form_widget(form.password.second, {attr: {class: 'form-input', placeholder: 'Repeat password'}}) }}
+          <div class="field-error" id="error-password-confirm"></div>
+          <div class="match-feedback" id="match-feedback"></div>
+          {{ form_errors(form.password.second) }}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.timezone.vars.id }}">Timezone</label>
+          {{ form_widget(form.timezone, {attr: {class: 'form-input form-select'}}) }}
+          {{ form_errors(form.timezone) }}
+        </div>
+
+        <button type="submit" class="btn btn--primary" id="register-submit">Create Account</button>
+      {{ form_end(form) }}
+
+      <div class="auth-links">
+        <span>Already have an account?</span>
+        <a href="{{ path('app_login') }}">Sign in</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const form = document.getElementById('register-form');
+const nameInput = document.querySelector('[data-field="name"]');
+const emailInput = document.querySelector('[data-field="email"]');
+const pw = document.getElementById('{{ form.password.first.vars.id }}');
+const confirm = document.getElementById('{{ form.password.second.vars.id }}');
+const pwError = document.getElementById('error-password');
+const confirmError = document.getElementById('error-password-confirm');
+const strengthFill = document.getElementById('strength-fill');
+const strengthLabel = document.getElementById('strength-label');
+const matchFeedback = document.getElementById('match-feedback');
+const rules = {
+  length: document.querySelector('[data-rule="length"]'),
+  upper: document.querySelector('[data-rule="upper"]'),
+  lower: document.querySelector('[data-rule="lower"]'),
+  number: document.querySelector('[data-rule="number"]'),
+};
+
+function checkStrength(v) {
+  let score = 0;
+  if (v.length >= 6) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[a-z]/.test(v)) score++;
+  if (/\d/.test(v)) score++;
+  const levels = ['', 'Weak', 'Medium', 'Good', 'Strong'];
+  const colors = ['', 'var(--color-error)', '#ff9f0a', '#34c759', '#34c759'];
+  strengthFill.style.width = (score / 4 * 100) + '%';
+  strengthFill.style.background = colors[score] || 'transparent';
+  strengthLabel.textContent = score > 0 ? levels[score] : '';
+}
+
+function checkRule(el, valid) {
+  el.classList.toggle('rule--valid', valid);
+  el.classList.toggle('rule--invalid', !valid);
+}
+
+function isValid() {
+  const n = nameInput.value.trim();
+  const e = emailInput.value.trim();
+  const p = pw.value;
+  const c = confirm.value;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const pwOk = p.length >= 6 && /[A-Z]/.test(p) && /[a-z]/.test(p) && /\d/.test(p);
+  const matchOk = p === c;
+  return n.length > 0 && emailOk && pwOk && matchOk;
+}
+
+form.addEventListener('submit', (e) => {
+  let firstError = null;
+  const n = nameInput.value.trim();
+  const eVal = emailInput.value.trim();
+  const p = pw.value;
+  const c = confirm.value;
+
+  document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+
+  if (!n) { document.getElementById('error-name').textContent = 'Enter your name'; if (!firstError) firstError = nameInput; }
+  if (!eVal) { document.getElementById('error-email').textContent = 'Enter your email'; if (!firstError) firstError = emailInput; }
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(eVal)) { document.getElementById('error-email').textContent = 'Invalid email'; if (!firstError) firstError = emailInput; }
+  if (!p) { pwError.textContent = 'Enter a password'; if (!firstError) firstError = pw; }
+  else if (!(p.length >= 6 && /[A-Z]/.test(p) && /[a-z]/.test(p) && /\d/.test(p))) { pwError.textContent = 'Password needs 6+ characters, uppercase, lowercase, and a number'; if (!firstError) firstError = pw; }
+  if (!c) { confirmError.textContent = 'Confirm your password'; if (!firstError) firstError = confirm; }
+  else if (p !== c) { confirmError.textContent = 'Passwords do not match'; if (!firstError) firstError = confirm; }
+
+  if (firstError) { e.preventDefault(); firstError.focus(); }
+});
+
+pw.addEventListener('input', () => {
+  const v = pw.value;
+  checkStrength(v);
+  checkRule(rules.length, v.length >= 6);
+  checkRule(rules.upper, /[A-Z]/.test(v));
+  checkRule(rules.lower, /[a-z]/.test(v));
+  checkRule(rules.number, /\d/.test(v));
+  matchFeedback.textContent = '';
+  pwError.textContent = '';
+});
+
+confirm.addEventListener('input', () => {
+  const ok = confirm.value === pw.value;
+  matchFeedback.textContent = confirm.value ? (ok ? 'Passwords match' : 'Passwords do not match') : '';
+  matchFeedback.className = 'match-feedback ' + (confirm.value ? (ok ? 'match--ok' : 'match--error') : '');
+  confirmError.textContent = '';
+});
+
+function togglePassword() {
+  const type = pw.type === 'password' ? 'text' : 'password';
+  pw.type = type;
+  confirm.type = type;
+  document.getElementById('eye-icon').style.display = type === 'password' ? '' : 'none';
+  document.getElementById('eye-off-icon').style.display = type === 'password' ? 'none' : '';
+}
+</script>
+{% endblock %}
