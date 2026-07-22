@@ -1,0 +1,54 @@
+[data-theme="dark"] {
+  --color-primary: #FF453A;
+  --color-primary-container: #CC372E;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #FFDAD6;
+  --color-primary-hover: #FF5E55;
+  --color-primary-subtle: #2E0D0B;
+  --color-surface-tint: #FF453A;
+
+  --color-secondary: #C5C5C8;
+  --color-secondary-container: #3A3A3E;
+  --color-on-secondary: #1C1C1E;
+  --color-on-secondary-container: #E8E8EA;
+
+  --color-background: #121214;
+  --color-surface: #121214;
+  --color-surface-dim: #121214;
+  --color-surface-bright: #37373A;
+  --color-surface-container-lowest: #0D0D0F;
+  --color-surface-container-low: #161618;
+  --color-surface-container: #1A1A1D;
+  --color-surface-container-high: #222225;
+  --color-surface-container-highest: #2A2A2E;
+  --color-surface-variant: #2A2A2E;
+  --color-on-surface: #E3E3E6;
+  --color-on-surface-variant: #B0B0B4;
+  --color-inverse-surface: #E3E3E6;
+  --color-inverse-on-surface: #1A1A1C;
+
+  --color-outline: #3A3A3E;
+  --color-outline-variant: #2A2A2E;
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.25);
+  --shadow-elevated: 0 4px 12px rgba(0,0,0,0.35);
+  --shadow-modal: 0 12px 40px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .topbar {
+  background: rgba(18, 18, 20, 0.88);
+  box-shadow: 0 1px 0 var(--color-outline-variant);
+}
+
+[data-theme="dark"] .mobile-nav {
+  background: rgba(18, 18, 20, 0.94);
+  box-shadow: 0 -1px 0 var(--color-outline-variant);
+}
+
+[data-theme="dark"] .btn--secondary {
+  background: var(--color-surface-container-high);
+}
+
+[data-theme="dark"] .btn--secondary:hover {
+  background: var(--color-surface-container-highest);
+}

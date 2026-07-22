@@ -1,0 +1,306 @@
+.auth-page {
+  height: 100dvh;
+  max-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+body.app-main--full .app-content {
+  padding: 0;
+}
+
+body.app-main--full .app-main {
+  margin-left: 0;
+}
+
+body.app-main--full .app-layout {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+body.app-main--full .app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+body.app-main--full .app-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  box-shadow: var(--shadow-soft);
+}
+
+.auth-card__header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.auth-card__logo {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.auth-card h1 {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.auth-card__subtitle {
+  color: var(--color-secondary);
+  font-size: 14px;
+}
+
+.form-field {
+  margin-bottom: 20px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-on-surface);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  background: var(--color-surface-container-low);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
+  color: var(--color-on-surface);
+}
+
+.form-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(143, 0, 32, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--color-outline);
+}
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper .form-input {
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-outline);
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+}
+
+.password-toggle:hover {
+  color: var(--color-on-surface-variant);
+}
+
+.password-strength {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.strength-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--color-surface-variant);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.strength-bar__fill {
+  height: 100%;
+  width: 0;
+  border-radius: var(--radius-full);
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.strength-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-secondary);
+  min-width: 50px;
+  text-align: right;
+}
+
+.password-rules {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.password-rules li {
+  font-size: 13px;
+  color: var(--color-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color var(--transition-fast);
+}
+
+.password-rules li::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-outline-variant);
+  transition: all var(--transition-fast);
+}
+
+.password-rules li.rule--valid {
+  color: #16a34a;
+}
+
+.password-rules li.rule--valid::before {
+  background: #16a34a;
+  border-color: #16a34a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z'/%3E%3C/svg%3E");
+  background-size: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+}
+
+.password-rules li.rule--invalid {
+  color: var(--color-error);
+}
+
+.password-rules li.rule--invalid::before {
+  border-color: var(--color-error);
+}
+
+.match-feedback {
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.match--ok {
+  color: #16a34a;
+}
+
+.match--error {
+  color: var(--color-error);
+}
+
+.form-field .form-error {
+  font-size: 12px;
+  color: var(--color-error);
+  margin-top: 4px;
+}
+
+.form-field .form-error ul {
+  list-style: none;
+}
+
+.form-field > ul {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.form-field > ul li {
+  font-size: 12px;
+  color: var(--color-error);
+  padding: 2px 0;
+}
+
+.field-error {
+  font-size: 12px;
+  color: var(--color-error);
+  margin-top: 4px;
+}
+
+.auth-form .btn {
+  width: 100%;
+  margin-top: 8px;
+  height: 44px;
+}
+
+.auth-links {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--color-secondary);
+}
+
+.auth-links a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-links a:hover {
+  text-decoration: underline;
+}
+
+.auth-flash {
+  background: rgba(186, 26, 26, 0.08);
+  color: var(--color-error);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.auth-flash.auth-flash--success {
+  background: rgba(22, 163, 74, 0.08);
+  color: #16a34a;
+}
