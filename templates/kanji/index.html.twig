@@ -361,6 +361,8 @@ function toggleSelect(kanjiId, el, cb) {
           if (item) item.classList.remove('kanji-grid__item--selected');
         }
       }
+      invalidateCache();
+      fetchKanji(currentPage, currentLevel, currentStatus);
       showToast(data.selected ? 'Added to study list' : 'Removed from study list', data.selected ? 'success' : 'error');
       if (cb) cb(data.selected);
     });
