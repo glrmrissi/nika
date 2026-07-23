@@ -1,23 +1,38 @@
 <header class="topbar">
-  <div class="topbar__brand-mobile">
-    <h2>Nihongo</h2>
+  <div class="topbar__start">
+    <div class="topbar__brand">
+      <h2>nika</h2>
+    </div>
+    <nav class="topbar__nav">
+      <a href="{{ path('app_home') }}" class="topbar__nav-link {% if app.current_route == 'app_home' %}topbar__nav-link--active{% endif %}">Dashboard</a>
+      <a href="{{ path('app_review') }}" class="topbar__nav-link {% if app.current_route == 'app_review' %}topbar__nav-link--active{% endif %}">Review</a>
+      <a href="{{ path('app_kanji_list') }}" class="topbar__nav-link {% if app.current_route == 'app_kanji_list' %}topbar__nav-link--active{% endif %}">Kanji</a>
+    </nav>
   </div>
 
-  <div class="topbar__nav">
-    <a href="{{ path('app_home') }}" class="topbar__nav-link {% if app.current_route == 'app_home' %}topbar__nav-link--active{% endif %}">Dashboard</a>
-    <a href="{{ path('app_review') }}" class="topbar__nav-link {% if app.current_route == 'app_review' %}topbar__nav-link--active{% endif %}">Review</a>
-    <a href="{{ path('app_kanji_list') }}" class="topbar__nav-link {% if app.current_route == 'app_kanji_list' %}topbar__nav-link--active{% endif %}">Kanji</a>
-  </div>
+  <div class="topbar__end">
+    <button class="topbar__icon-btn" id="theme-toggle" title="Toggle theme">
+      <i class="bi bi-sun" id="theme-toggle-icon"></i>
+    </button>
 
-  <div class="topbar__actions">
     {% if app.user %}
-      <a href="{{ path('app_profile') }}" class="topbar__avatar" title="{{ app.user.name }}">
-        {% if app.user.avatarPath %}
-          <img src="{{ asset(app.user.avatarPath) }}" alt="{{ app.user.name }}">
-        {% else %}
-          <div style="width:100%;height:100%;background:var(--color-primary-container);color:var(--color-on-primary-fixed);display:flex;align-items:center;justify-content:center;font-weight:700;">{{ app.user.name|first|upper }}</div>
-        {% endif %}
-      </a>
+      <div class="topbar__user-menu">
+        <button class="topbar__avatar" title="{{ app.user.name }}">
+          {% if app.user.avatarPath %}
+            <img src="{{ asset(app.user.avatarPath) }}" alt="{{ app.user.name }}">
+          {% else %}
+            <span class="topbar__avatar-letter">{{ app.user.name|first|upper }}</span>
+          {% endif %}
+        </button>
+        <div class="topbar__dropdown">
+          <a href="{{ path('app_profile') }}" class="topbar__dropdown-item">
+            <i class="bi bi-person"></i> Profile
+          </a>
+          <a href="{{ path('app_logout') }}" class="topbar__dropdown-item">
+            <i class="bi bi-box-arrow-right"></i> Sign Out
+          </a>
+        </div>
+      </div>
     {% else %}
       <a href="{{ path('app_login') }}" class="btn btn--sm btn--primary">Sign In</a>
     {% endif %}

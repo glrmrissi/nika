@@ -4,7 +4,7 @@
   <script>!function(){var t=localStorage.getItem('theme');document.documentElement.setAttribute('data-theme',t||'dark')}();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}KanjiReview{% endblock %}</title>
+  <title>{% block title %}nika{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,28 +12,20 @@
   <link rel="stylesheet" href="{{ asset('css/base.css') }}">
   <link rel="stylesheet" href="{{ asset('css/dark.css') }}">
   <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/components/sidebar.css') }}">
   <link rel="stylesheet" href="{{ asset('css/components/topbar.css') }}">
   <link rel="stylesheet" href="{{ asset('css/components/mobile-nav.css') }}">
   <link rel="stylesheet" href="{{ asset('css/components/ui.css') }}">
   {% block stylesheets %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
-<script>!function(){var s=localStorage.getItem('sidebarCollapsed'),d=document.body,r=d.classList.contains('review-page'),c=s!==null?s==='true':r;if(c){d.dataset.sb='1';document.write('<style>body[data-sb] .sidebar{width:64px;padding:40px 12px}body[data-sb] .app-main{margin-left:64px}</style>')}}();</script>
   <div class="app-layout">
-    {% block sidebar %}
-      {% include 'components/sidebar.html.twig' %}
+    {% block topbar %}
+      {% include 'components/topbar.html.twig' %}
     {% endblock %}
 
-    <main class="app-main">
-      {% block topbar %}
-        {% include 'components/topbar.html.twig' %}
-      {% endblock %}
-
-      <div class="app-content">
-        {% block body %}{% endblock %}
-      </div>
-    </main>
+    <div class="app-content">
+      {% block body %}{% endblock %}
+    </div>
   </div>
 
   {% block mobile_nav %}
