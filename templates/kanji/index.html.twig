@@ -1,23 +1,42 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Kanji | KanjiReview{% endblock %}
+{% block title %}Kanji | nika{% endblock %}
 
 {% block stylesheets %}
 <style>
 .kanji-browser { max-width: 800px; margin: 0 auto; }
 .kanji-browser__header { margin-bottom: 24px; }
-.kanji-browser__filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
-.kanji-browser__filter { padding: 6px 16px; border-radius: var(--radius-full); border: 1px solid var(--color-outline-variant); background: var(--color-surface-container-lowest); font-size: 13px; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); }
+.kanji-browser__toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.kanji-browser__filter { padding: 6px 16px; border-radius: var(--radius-full); border: 1px solid var(--color-outline-variant); background: var(--color-surface-container-lowest); font-size: 13px; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); color: var(--color-on-surface); }
 .kanji-browser__filter:hover { border-color: var(--color-primary); }
 .kanji-browser__filter--active { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
-.kanji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
-.kanji-grid__item { background: var(--color-surface-container-low); border-radius: var(--radius-md); padding: 16px 8px; text-align: center; cursor: pointer; transition: background var(--transition-fast); border: 1px solid transparent; }
+.kanji-browser__toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
+.kanji-browser__filters { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.kanji-browser__actions { display: flex; gap: 8px; flex-shrink: 0; }
+.kanji-browser__tabs { display: flex; gap: 4px; margin-bottom: 16px; background: var(--color-surface-container); border-radius: var(--radius-full); width: fit-content; }
+.kanji-browser__action { padding: 6px 16px; border-radius: var(--radius-full); border: 1px solid var(--color-outline-variant); background: var(--color-surface-container-lowest); font-size: 13px; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); color: var(--color-on-surface); }
+.kanji-browser__action:hover { border-color: var(--color-primary); }
+.kanji-browser__action--primary { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+.kanji-browser__action--primary:hover { opacity: 0.9; }
+.kanji-browser__tab { padding: 6px 16px; border-radius: var(--radius-full); font-size: 13px; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); color: var(--color-secondary); border: none; background: none; }
+.kanji-browser__tab:hover { color: var(--color-on-surface); }
+.kanji-browser__tab--active { background: var(--color-surface-container-lowest); color: var(--color-on-surface); box-shadow: var(--shadow-card); }
+.kanji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.kanji-grid__item { background: var(--color-surface-container-low); border-radius: var(--radius-md); padding: 12px 8px 8px; text-align: center; cursor: pointer; transition: background var(--transition-fast); border: 2px solid transparent; position: relative; }
 .kanji-grid__item:hover { background: var(--color-surface-container); border-color: var(--color-outline-variant); }
+.kanji-grid__item--selected { border-color: var(--color-primary); }
+.kanji-grid__item--done { opacity: 0.55; }
+.kanji-grid__item--done:hover { opacity: 0.75; }
+.kanji-grid__item--done .kanji-grid__char { text-decoration: line-through; text-decoration-color: var(--color-primary); }
 .kanji-grid__char { font-size: 28px; font-weight: 500; line-height: 1.2; }
 .kanji-grid__reading { font-size: 12px; color: var(--color-secondary); margin-top: 4px; }
 .kanji-grid__meaning { font-size: 12px; color: var(--color-on-surface-variant); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kanji-grid__trophy { position: absolute; top: 2px; right: 2px; font-size: 14px; color: var(--color-primary); line-height: 1; }
+.kanji-grid__select { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--color-outline-variant); background: var(--color-surface-container-lowest); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--color-on-primary); cursor: pointer; transition: all var(--transition-fast); line-height: 1; padding: 0; }
+.kanji-grid__select:hover { border-color: var(--color-primary); }
+.kanji-grid__select--on { background: var(--color-primary); border-color: var(--color-primary); }
 .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
-.pagination__btn { padding: 6px 14px; border-radius: var(--radius-md); border: 1px solid var(--color-outline-variant); font-size: 13px; font-weight: 500; background: var(--color-surface-container-lowest); cursor: pointer; transition: all var(--transition-fast); }
+.pagination__btn { padding: 6px 14px; border-radius: var(--radius-md); border: 1px solid var(--color-outline-variant); font-size: 13px; font-weight: 500; background: var(--color-surface-container-lowest); cursor: pointer; transition: all var(--transition-fast); color: var(--color-on-surface); }
 .pagination__btn:hover { border-color: var(--color-primary); }
 .pagination__btn--active { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
 .pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -31,7 +50,24 @@
 .kanji-modal__kunyomi { color: #34c759; }
 .kanji-modal__meanings { font-size: 16px; color: var(--color-on-surface); margin-bottom: 8px; }
 .kanji-modal__meta { font-size: 12px; color: var(--color-secondary); }
+.kanji-modal__actions { display: flex; gap: 8px; margin-top: 20px; justify-content: center; }
+.kanji-modal__btn { padding: 8px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); border: none; }
+.kanji-modal__btn--primary { background: var(--color-primary); color: var(--color-on-primary); }
+.kanji-modal__btn--primary:hover { opacity: 0.9; }
+.kanji-modal__btn--secondary { background: var(--color-surface-container); color: var(--color-on-surface); border: 1px solid var(--color-outline-variant); }
+.kanji-modal__btn--secondary:hover { background: var(--color-surface-container-high); }
+.kanji-modal__btn--success { background: #34c759; color: #fff; }
+.kanji-modal__btn--success:hover { background: #2db74e; }
+.kanji-modal__btn--danger { background: var(--color-error); color: #fff; }
+.kanji-modal__btn--danger:hover { opacity: 0.9; }
 .kanji-browser__loading { text-align: center; padding: 40px; color: var(--color-secondary); }
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; pointer-events: none; }
+.toast { padding: 12px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; background: var(--color-inverse-surface); color: var(--color-inverse-on-surface); box-shadow: var(--shadow-modal); pointer-events: auto; max-width: 360px; animation: toast-in 0.3s ease-out forwards; }
+.toast--out { animation: toast-out 0.25s ease-in forwards; }
+.toast--success { background: #1a7d36; color: #fff; }
+.toast--error { background: var(--color-error); color: var(--color-on-error); }
+@keyframes toast-in { 0% { transform: translateX(100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+@keyframes toast-out { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(100%); opacity: 0; } }
 @media (max-width: 480px) { .kanji-grid { grid-template-columns: repeat(3, 1fr); } }
 </style>
 {% endblock %}
@@ -40,16 +76,28 @@
 <div class="kanji-browser">
   <div class="kanji-browser__header">
     <h2 class="page-title">Kanji</h2>
-    <p class="page-subtitle">Navegue pelos kanji JLPT N5 a N1.</p>
+    <p class="page-subtitle">Browse kanji JLPT N5 to N1. Click the circle to select for study.</p>
   </div>
 
-  <div class="kanji-browser__filters" id="filters">
-    <button class="kanji-browser__filter kanji-browser__filter--active" data-level="">Todos</button>
-    <button class="kanji-browser__filter" data-level="N5">N5</button>
-    <button class="kanji-browser__filter" data-level="N4">N4</button>
-    <button class="kanji-browser__filter" data-level="N3">N3</button>
-    <button class="kanji-browser__filter" data-level="N2">N2</button>
-    <button class="kanji-browser__filter" data-level="N1">N1</button>
+  <div class="kanji-browser__tabs" id="tabs">
+    <button class="kanji-browser__tab kanji-browser__tab--active" data-status="">All</button>
+    <button class="kanji-browser__tab" data-status="studying">Studying</button>
+    <button class="kanji-browser__tab" data-status="complete">Done</button>
+  </div>
+
+  <div class="kanji-browser__toolbar">
+    <div class="kanji-browser__filters" id="filters">
+      <button class="kanji-browser__filter kanji-browser__filter--active" data-level="">All Levels</button>
+      <button class="kanji-browser__filter" data-level="N5">N5</button>
+      <button class="kanji-browser__filter" data-level="N4">N4</button>
+      <button class="kanji-browser__filter" data-level="N3">N3</button>
+      <button class="kanji-browser__filter" data-level="N2">N2</button>
+      <button class="kanji-browser__filter" data-level="N1">N1</button>
+    </div>
+    <div class="kanji-browser__actions" id="actions">
+      <button class="kanji-browser__action kanji-browser__action--primary" id="select-all-btn">Select All</button>
+      <button class="kanji-browser__action" id="deselect-all-btn">Deselect All</button>
+    </div>
   </div>
 
   <div id="kanji-grid" class="kanji-grid"></div>
@@ -67,22 +115,27 @@
     </div>
     <div class="kanji-modal__meanings" id="modal-meanings"></div>
     <div class="kanji-modal__meta" id="modal-meta"></div>
+    <div class="kanji-modal__actions" id="modal-actions"></div>
   </div>
 </div>
+
+<div class="toast-container" id="toast-container"></div>
 {% endblock %}
 
 {% block javascripts %}
 <script>
 var currentPage = 1;
 var currentLevel = '';
+var currentStatus = '';
 var totalPages = 1;
+var isAuthenticated = {{ app.user ? 'true' : 'false' }};
 
-function getCacheKey(page, level) {
-  return 'kanji_list_' + page + '_' + (level || 'all');
+function getCacheKey(page, level, status) {
+  return 'kanji_list_' + page + '_' + (level || 'all') + '_' + (status || 'all');
 }
 
-function getFromCache(page, level) {
-  var key = getCacheKey(page, level);
+function getFromCache(page, level, status) {
+  var key = getCacheKey(page, level, status);
   var cached = localStorage.getItem(key);
   if (!cached) return null;
   try {
@@ -93,28 +146,56 @@ function getFromCache(page, level) {
   return null;
 }
 
-function setCache(page, level, payload) {
-  var key = getCacheKey(page, level);
+function setCache(page, level, status, payload) {
+  var key = getCacheKey(page, level, status);
   localStorage.setItem(key, JSON.stringify({ ts: Date.now(), payload: payload }));
 }
 
-function fetchKanji(page, level) {
-  var cached = getFromCache(page, level);
+function invalidateCache() {
+  for (var i = localStorage.length - 1; i >= 0; i--) {
+    var key = localStorage.key(i);
+    if (key && key.indexOf('kanji_list_') === 0) {
+      localStorage.removeItem(key);
+    }
+  }
+}
+
+function showToast(msg, type) {
+  var container = document.getElementById('toast-container');
+  while (container.children.length >= 3) {
+    if (container.lastChild) container.lastChild.remove();
+  }
+  var el = document.createElement('div');
+  el.className = 'toast';
+  if (type === 'success') el.classList.add('toast--success');
+  else if (type === 'error') el.classList.add('toast--error');
+  el.textContent = msg;
+  container.insertBefore(el, container.firstChild);
+  setTimeout(function () {
+    if (!el.parentNode) return;
+    el.classList.add('toast--out');
+    setTimeout(function () { if (el.parentNode) el.remove(); }, 250);
+  }, 3000);
+}
+
+function fetchKanji(page, level, status) {
+  var cached = getFromCache(page, level, status);
   if (cached) {
     renderKanji(cached);
     return;
   }
 
   var grid = document.getElementById('kanji-grid');
-  grid.innerHTML = '<div class="kanji-browser__loading">Carregando...</div>';
+  grid.innerHTML = '<div class="kanji-browser__loading">Loading...</div>';
 
   var params = new URLSearchParams({ page: page, limit: 50 });
   if (level) params.set('level', level);
+  if (status) params.set('status', status);
 
   fetch('/api/kanji?' + params.toString())
     .then(function (r) { return r.json(); })
     .then(function (data) {
-      setCache(page, level, data);
+      setCache(page, level, status, data);
       renderKanji(data);
     });
 }
@@ -136,51 +217,200 @@ function renderKanji(data) {
   data.data.forEach(function (k) {
     var onyomi = k.onyomi || '';
     var meaning = k.meanings ? k.meanings.split(',')[0].trim() : '';
-    html += '<div class="kanji-grid__item" onclick="showDetail(' + k.id + ',\'' + k.character + '\',\'' + onyomi.replace(/'/g, "\\'") + '\',\'' + (k.kunyomi || '').replace(/'/g, "\\'") + '\',\'' + meaning.replace(/'/g, "\\'") + '\',\'' + (k.jlptLevel || '') + '\')">';
+    var selected = k.selected ? ' kanji-grid__item--selected' : '';
+    var done = k.done ? ' kanji-grid__item--done' : '';
+    var selDot = k.selected ? ' kanji-grid__select--on' : '';
+    var trophy = k.done ? '<span class="kanji-grid__trophy">\u{1F3C6}</span>' : '';
+    html += '<div class="kanji-grid__item' + selected + done + '" data-id="' + k.id + '" onclick="showDetail(' + k.id + ',\'' + k.character + '\',\'' + onyomi.replace(/'/g, "\\'") + '\',\'' + (k.kunyomi || '').replace(/'/g, "\\'") + '\',\'' + meaning.replace(/'/g, "\\'") + '\',\'' + (k.jlptLevel || '') + '\',' + (k.selected ? 1 : 0) + ',' + (k.done ? 1 : 0) + ')">';
     html += '<div class="kanji-grid__char">' + k.character + '</div>';
     html += '<div class="kanji-grid__reading">' + onyomi + '</div>';
     html += '<div class="kanji-grid__meaning">' + meaning + '</div>';
+    html += trophy;
+    html += '<span class="kanji-grid__select' + selDot + '" onclick="event.stopPropagation();toggleSelect(' + k.id + ', this)" data-selected="' + (k.selected ? '1' : '0') + '">' + (k.selected ? '\u2713' : '') + '</span>';
     html += '</div>';
   });
   grid.innerHTML = html;
 
   var phtml = '';
-  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled' : '') + '>Anterior</button>';
+  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled' : '') + '>Prev</button>';
   for (var i = 1; i <= Math.min(totalPages, 10); i++) {
     phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
   }
   if (totalPages > 10) {
     phtml += '<span style="padding:6px 4px;color:var(--color-secondary);">...</span>';
   }
-  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled' : '') + '>Próximo</button>';
+  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled' : '') + '>Next</button>';
   pagination.innerHTML = phtml;
 }
 
 function goToPage(page) {
   if (page < 1 || page > totalPages) return;
   currentPage = page;
-  fetchKanji(page, currentLevel);
+  fetchKanji(page, currentLevel, currentStatus);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function showDetail(id, char, onyomi, kunyomi, meanings, level) {
+var _modalData = null;
+
+function showDetail(id, char, onyomi, kunyomi, meanings, level, selected, done) {
+  _modalData = { id: id, selected: selected, done: done };
   document.getElementById('modal-char').textContent = char;
   document.getElementById('modal-onyomi').textContent = '\u97F3: ' + onyomi;
   document.getElementById('modal-kunyomi').textContent = '\u8A13: ' + kunyomi;
   document.getElementById('modal-meanings').textContent = meanings;
   document.getElementById('modal-meta').textContent = level || '';
+
+  var actions = document.getElementById('modal-actions');
+  if (!isAuthenticated) {
+    actions.innerHTML = '';
+  } else {
+    var selectLabel = _modalData.selected ? 'Remove from Study' : 'Add to Study';
+    var selectCls = _modalData.selected ? 'kanji-modal__btn--danger' : 'kanji-modal__btn--primary';
+    var doneLabel = _modalData.done ? 'Mark Incomplete' : 'Mark as Done';
+    var doneCls = _modalData.done ? 'kanji-modal__btn--secondary' : 'kanji-modal__btn--success';
+    actions.innerHTML =
+      '<button class="kanji-modal__btn ' + selectCls + '" onclick="modalToggleSelect()">' + selectLabel + '</button>' +
+      (_modalData.selected ? '<button class="kanji-modal__btn ' + doneCls + '" onclick="modalToggleDone()">' + doneLabel + '</button>' : '');
+  }
+
   document.getElementById('kanji-modal').classList.add('kanji-modal--open');
 }
 
 function closeModal() {
   document.getElementById('kanji-modal').classList.remove('kanji-modal--open');
+  _modalData = null;
+}
+
+function modalToggleSelect() {
+  if (!_modalData) return;
+  toggleSelect(_modalData.id, null, function (selected) {
+    _modalData.selected = selected;
+    showDetail(
+      _modalData.id,
+      document.getElementById('modal-char').textContent,
+      document.getElementById('modal-onyomi').textContent.replace('\u97F3: ', ''),
+      document.getElementById('modal-kunyomi').textContent.replace('\u8A13: ', ''),
+      document.getElementById('modal-meanings').textContent,
+      document.getElementById('modal-meta').textContent,
+      _modalData.selected,
+      _modalData.done
+    );
+  });
+}
+
+function modalToggleDone() {
+  if (!_modalData || !_modalData.selected) return;
+  fetch('/kanji/' + _modalData.id + '/toggle-done', { method: 'POST' })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      _modalData.done = data.done;
+      showToast(data.done ? 'Marked as done' : 'Marked as incomplete', 'success');
+      invalidateCache();
+      fetchKanji(currentPage, currentLevel, currentStatus);
+      showDetail(
+        _modalData.id,
+        document.getElementById('modal-char').textContent,
+        document.getElementById('modal-onyomi').textContent.replace('\u97F3: ', ''),
+        document.getElementById('modal-kunyomi').textContent.replace('\u8A13: ', ''),
+        document.getElementById('modal-meanings').textContent,
+        document.getElementById('modal-meta').textContent,
+        _modalData.selected,
+        _modalData.done
+      );
+    });
+}
+
+function toggleSelect(kanjiId, el, cb) {
+  fetch('/kanji/' + kanjiId + '/select', { method: 'POST' })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (el) {
+        var item = el.closest('.kanji-grid__item');
+        if (data.selected) {
+          el.classList.add('kanji-grid__select--on');
+          el.textContent = '\u2713';
+          el.dataset.selected = '1';
+          if (item) item.classList.add('kanji-grid__item--selected');
+        } else {
+          el.classList.remove('kanji-grid__select--on');
+          el.textContent = '';
+          el.dataset.selected = '0';
+          if (item) item.classList.remove('kanji-grid__item--selected');
+        }
+      }
+      showToast(data.selected ? 'Added to study list' : 'Removed from study list', data.selected ? 'success' : 'error');
+      if (cb) cb(data.selected);
+    });
+}
+
+function batchSelect(action) {
+  if (!isAuthenticated) { showToast('Sign in to select kanji', 'error'); return; }
+  var btn = document.getElementById(action === 'select' ? 'select-all-btn' : 'deselect-all-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  var body = { action: action };
+  if (currentLevel) {
+    body.level = currentLevel;
+  } else {
+    var ids = [];
+    var items = document.querySelectorAll('#kanji-grid .kanji-grid__item');
+    items.forEach(function (el) {
+      var id = parseInt(el.getAttribute('data-id'));
+      if (id) ids.push(id);
+    });
+    body.ids = ids;
+  }
+
+  fetch('/api/kanji/select-batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.success) {
+        var msg = action === 'select' ? 'Added ' + data.count + ' kanji' : 'Removed ' + data.count + ' kanji';
+        showToast(msg, 'success');
+        invalidateCache();
+        fetchKanji(currentPage, currentLevel, currentStatus);
+      } else if (data.error) {
+        showToast(data.error, 'error');
+      }
+    })
+    .catch(function () {
+      showToast('Something went wrong', 'error');
+    })
+    .finally(function () {
+      btn.disabled = false;
+      btn.textContent = action === 'select' ? 'Select All' : 'Deselect All';
+    });
 }
 
 document.getElementById('kanji-modal').addEventListener('click', function (e) {
   if (e.target === this) closeModal();
 });
 
+document.getElementById('select-all-btn').addEventListener('click', function () {
+  batchSelect('select');
+});
+
+document.getElementById('deselect-all-btn').addEventListener('click', function () {
+  batchSelect('deselect');
+});
+
 document.addEventListener('DOMContentLoaded', function () {
+  var tabBtns = document.querySelectorAll('.kanji-browser__tab');
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      tabBtns.forEach(function (b) { b.classList.remove('kanji-browser__tab--active'); });
+      this.classList.add('kanji-browser__tab--active');
+      currentStatus = this.getAttribute('data-status') || '';
+      currentPage = 1;
+      fetchKanji(currentPage, currentLevel, currentStatus);
+    });
+  });
+
   var filterBtns = document.querySelectorAll('.kanji-browser__filter');
   filterBtns.forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -188,11 +418,11 @@ document.addEventListener('DOMContentLoaded', function () {
       this.classList.add('kanji-browser__filter--active');
       currentLevel = this.getAttribute('data-level') || '';
       currentPage = 1;
-      fetchKanji(currentPage, currentLevel);
+      fetchKanji(currentPage, currentLevel, currentStatus);
     });
   });
 
-  fetchKanji(1, '');
+  fetchKanji(1, '', '');
 });
 </script>
 {% endblock %}

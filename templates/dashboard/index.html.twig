@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard | KanjiReview{% endblock %}
+{% block title %}Dashboard | nika{% endblock %}
 
 {% block stylesheets %}
   <link rel="stylesheet" href="{{ asset('css/pages/dashboard.css') }}">
@@ -29,17 +29,23 @@
         <span class="badge badge--primary">Total: {{ totalCount }} kanji</span>
       </div>
       <div class="mastery__progress">
-        {% for level in byLevel %}
-          <div class="mastery__row">
-            <div class="mastery__row-header">
-              <span>Kanji {{ level.jlptLevel }}</span>
-              <span>{{ level.total }} kanji</span>
+        {% if byLevel is empty %}
+          <p style="padding:24px 0;text-align:center;color:var(--color-secondary);font-size:14px;">
+            No kanji selected yet. <a href="{{ path('app_kanji_list') }}" style="color:var(--color-primary);">Browse kanji</a> to start.
+          </p>
+        {% else %}
+          {% for level in byLevel %}
+            <div class="mastery__row">
+              <div class="mastery__row-header">
+                <span>Kanji {{ level.jlptLevel }}</span>
+                <span>{{ level.total }} kanji</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: {{ level.percentage }}%; opacity: {{ 0.4 + (level.percentage / 100) * 0.6 }};"></div>
+              </div>
             </div>
-            <div class="progress-bar">
-              <div class="progress-bar__fill" style="width: {{ level.percentage }}%; opacity: {{ 0.4 + (level.percentage / 100) * 0.6 }};"></div>
-            </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        {% endif %}
       </div>
     </article>
 
@@ -78,6 +84,32 @@
         {% endfor %}
       </div>
     </article>
+
+    {% if completedCount > 0 %}
+    <article class="stat-card bento--trophy">
+      <div class="trophy__header">
+        <div>
+          <h3 class="section-title">Trophy Case</h3>
+          <p class="page-subtitle" style="font-size:15px;">Kanji you have mastered.</p>
+        </div>
+        <i class="bi bi-trophy" style="font-size:24px;color:var(--color-primary);"></i>
+      </div>
+      <div class="trophy__count">
+        <span style="font-size:36px;font-weight:700;font-family:var(--font-heading);color:var(--color-primary);">{{ completedCount }}</span>
+        <p style="color:var(--color-secondary);margin-top:2px;">completed kanji</p>
+      </div>
+      {% if recentCompleted is not empty %}
+      <div class="trophy__recent" style="margin-top:16px;">
+        <p style="font-size:13px;color:var(--color-secondary);margin-bottom:8px;">Recent</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          {% for item in recentCompleted %}
+          <span style="font-size:20px;padding:4px 8px;background:var(--color-surface-container);border-radius:var(--radius-md);" title="{{ item.meanings|split(',')|first|trim }}">{{ item.character }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </article>
+    {% endif %}
 
     <article class="stat-card bento--ranking">
       <div class="ranking__header">
