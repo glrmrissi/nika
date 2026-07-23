@@ -1,0 +1,18 @@
+.c-tooltip {
+  position: fixed;
+  z-index: 9999;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-high);
+  box-shadow: var(--shadow-elevated);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease-out;
+  white-space: nowrap;
+}
+
+.c-tooltip--visible {
+  opacity: 1;
+}
