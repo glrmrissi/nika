@@ -35,31 +35,19 @@ class Kanji
     #[ORM\Column(nullable: true)]
     private ?int $strokeCount = null;
 
-    #[ORM\Column(type: Types::FLOAT)]
-    private float $easeFactor = 2.5;
-
-    #[ORM\Column]
-    private int $interval = 0;
-
-    #[ORM\Column]
-    private int $repetitions = 0;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $nextReviewAt = null;
-
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\OneToMany(targetEntity: ReviewLog::class, mappedBy: 'kanji', cascade: ['persist', 'remove'])]
     private Collection $reviewLogs;
 
+    #[ORM\OneToMany(targetEntity: UserKanji::class, mappedBy: 'kanji', cascade: ['persist', 'remove'])]
+    private Collection $userKanjis;
+
     public function __construct()
     {
         $this->reviewLogs = new ArrayCollection();
-        $this->nextReviewAt = new \DateTime();
+        $this->userKanjis = new ArrayCollection();
         $this->createdAt = new \DateTime();
     }
 
@@ -76,21 +64,14 @@ class Kanji
     public function setJlptLevel(?string $jlptLevel): self { $this->jlptLevel = $jlptLevel; return $this; }
     public function getStrokeCount(): ?int { return $this->strokeCount; }
     public function setStrokeCount(?int $strokeCount): self { $this->strokeCount = $strokeCount; return $this; }
-    public function getEaseFactor(): float { return $this->easeFactor; }
-    public function setEaseFactor(float $easeFactor): self { $this->easeFactor = $easeFactor; return $this; }
-    public function getInterval(): int { return $this->interval; }
-    public function setInterval(int $interval): self { $this->interval = $interval; return $this; }
-    public function getRepetitions(): int { return $this->repetitions; }
-    public function setRepetitions(int $repetitions): self { $this->repetitions = $repetitions; return $this; }
-    public function getNextReviewAt(): ?\DateTimeInterface { return $this->nextReviewAt; }
-    public function setNextReviewAt(\DateTimeInterface $nextReviewAt): self { $this->nextReviewAt = $nextReviewAt; return $this; }
     public function getCreatedAt(): ?\DateTimeInterface { return $this->createdAt; }
     public function setCreatedAt(\DateTimeInterface $createdAt): self { $this->createdAt = $createdAt; return $this; }
-    public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): self { $this->updatedAt = $updatedAt; return $this; }
     public function getReviewLogs(): Collection { return $this->reviewLogs; }
     public function addReviewLog(ReviewLog $reviewLog): self { if (!$this->reviewLogs->contains($reviewLog)) { $this->reviewLogs->add($reviewLog); $reviewLog->setKanji($this); } return $this; }
     public function removeReviewLog(ReviewLog $reviewLog): self { if ($this->reviewLogs->removeElement($reviewLog)) { if ($reviewLog->getKanji() === $this) { $reviewLog->setKanji(null); } } return $this; }
+    public function getUserKanjis(): Collection { return $this->userKanjis; }
+    public function addUserKanji(UserKanji $userKanji): self { if (!$this->userKanjis->contains($userKanji)) { $this->userKanjis->add($userKanji); $userKanji->setKanji($this); } return $this; }
+    public function removeUserKanji(UserKanji $userKanji): self { if ($this->userKanjis->removeElement($userKanji)) { if ($userKanji->getKanji() === $this) { $userKanji->setKanji(null); } } return $this; }
 
     public function getMeaningList(): array
     {

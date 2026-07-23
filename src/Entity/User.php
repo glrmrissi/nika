@@ -65,10 +65,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\OneToMany(targetEntity: ReviewLog::class, mappedBy: 'reviewUser')]
     private Collection $reviewLogs;
 
+    #[ORM\OneToMany(targetEntity: UserKanji::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private Collection $userKanjis;
+
+    #[ORM\OneToMany(targetEntity: NameHistory::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['changedAt' => 'DESC'])]
+    private Collection $nameHistories;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
         $this->reviewLogs = new ArrayCollection();
+        $this->userKanjis = new ArrayCollection();
+        $this->nameHistories = new ArrayCollection();
     }
 
     public function getId(): ?int { return $this->id; }
@@ -124,6 +133,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     public function getReviewLogs(): Collection { return $this->reviewLogs; }
     public function addReviewLog(ReviewLog $reviewLog): self { if (!$this->reviewLogs->contains($reviewLog)) { $this->reviewLogs->add($reviewLog); $reviewLog->setReviewUser($this); } return $this; }
     public function removeReviewLog(ReviewLog $reviewLog): self { if ($this->reviewLogs->removeElement($reviewLog)) { if ($reviewLog->getReviewUser() === $this) { $reviewLog->setReviewUser(null); } } return $this; }
+    public function getUserKanjis(): Collection { return $this->userKanjis; }
+    public function addUserKanji(UserKanji $userKanji): self { if (!$this->userKanjis->contains($userKanji)) { $this->userKanjis->add($userKanji); $userKanji->setUser($this); } return $this; }
+    public function removeUserKanji(UserKanji $userKanji): self { if ($this->userKanjis->removeElement($userKanji)) { if ($userKanji->getUser() === $this) { $userKanji->setUser(null); } } return $this; }
+    public function getNameHistories(): Collection { return $this->nameHistories; }
+    public function addNameHistory(NameHistory $nameHistory): self { if (!$this->nameHistories->contains($nameHistory)) { $this->nameHistories->add($nameHistory); $nameHistory->setUser($this); } return $this; }
+    public function removeNameHistory(NameHistory $nameHistory): self { if ($this->nameHistories->removeElement($nameHistory)) { if ($nameHistory->getUser() === $this) { $nameHistory->setUser(null); } } return $this; }
 
     public function eraseCredentials(): void {}
 
@@ -142,6 +157,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
         if ($this->totpSecret === null) {
             return null;
         }
-        return new TotpConfiguration($this->totpSecret, TotpConfiguration::TOTP_DIGITS, 30);
+        return new TotpConfiguration($this->totpSecret, 'sha1', 30, 6);
     }
 }
