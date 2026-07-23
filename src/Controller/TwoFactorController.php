@@ -4,9 +4,10 @@ namespace App\Controller;
 
 use App\Form\TwoFactorSetupFormType;
 use Doctrine\ORM\EntityManagerInterface;
-use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
-use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
+use OTPHP\TOTP;
+use ParagonIE\ConstantTime\Base32;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,8 +27,9 @@ class TwoFactorController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $code = $form->get('code')->getData();
-            if ($user->getTotpAuthenticationConfiguration()?->getCode() === $code) {
+            $config = $user->getTotpAuthenticationConfiguration();
+            $totp = TOTP::create($config->getSecret(), $config->getPeriod(), $config->getAlgorithm(), $config->getDigits());
+            if ($totp->verify($form->get('code')->getData(), null, 1)) {
                 $user->setTotpEnabled(true);
                 $em->flush();
                 $this->addFlash('success', '2FA enabled successfully!');
@@ -37,22 +39,26 @@ class TwoFactorController extends AbstractController
         }
 
         if (!$user->getTotpSecret()) {
-            $secret = bin2hex(random_bytes(20));
+            $secret = Base32::encodeUpper(random_bytes(20));
             $user->setTotpSecret($secret);
             $user->setTotpEnabled(false);
             $em->flush();
+            $user->setTotpSecret($secret);
+        } elseif (!preg_match('/^[A-Z2-7]+=*$/', $user->getTotpSecret())) {
+            $secret = Base32::encodeUpper(random_bytes(20));
+            $user->setTotpSecret($secret);
+            $em->flush();
+            $user->setTotpSecret($secret);
         }
 
-        $qrCode = null;
-        if ($user->getTotpAuthenticationConfiguration()) {
-            $uri = $user->getTotpAuthenticationConfiguration()->getAuthenticationContextUri();
-            $result = Builder::create()
-                ->writer(new PngWriter())
-                ->data($uri)
-                ->size(200)
-                ->build();
-            $qrCode = $result->getDataUri();
-        }
+        $config = $user->getTotpAuthenticationConfiguration();
+        $totp = TOTP::create($config->getSecret(), $config->getPeriod(), $config->getAlgorithm(), $config->getDigits());
+        $totp->setLabel($user->getEmail());
+        $totp->setIssuer('nika');
+        $uri = $totp->getProvisioningUri();
+        $code = new QrCode(data: $uri, size: 200);
+        $result = (new PngWriter())->write($code);
+        $qrCode = $result->getDataUri();
 
         return $this->render('security/two_factor_setup.html.twig', [
             'form' => $form->createView(),
