@@ -23,7 +23,7 @@ class DiscordNotifier
 
         $payload = [
             'content' => $message,
-            'username' => 'KanjiReview Security',
+            'username' => 'nika Security',
         ];
 
         if (!empty($extra)) {

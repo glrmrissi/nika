@@ -13,6 +13,12 @@
       "skillPath": ".claude/skills/interface-design/SKILL.md",
       "computedHash": "55a83a96d1e3d161b8c3630dab8ae2dd4547d92636d3d9b4b447d7d59163e084"
     },
+    "revenue-centric-design": {
+      "source": "heliocosta-dev/revenue-centric-design",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "2302f5d551df943ca823b262a8c3f1009ab60aa3f15fd866703b7e337bd0530d"
+    },
     "web-design-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",

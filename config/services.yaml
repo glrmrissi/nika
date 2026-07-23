@@ -26,3 +26,5 @@ services:
     App\Security\LoginSuccessHandler:
         tags:
             - { name: 'security.authentication.success_handler', firewall: 'main' }
+
+
