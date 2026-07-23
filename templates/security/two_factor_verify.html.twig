@@ -1,8 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Two-Factor Auth | KanjiReview{% endblock %}
+{% block title %}Two-Factor Auth | nika{% endblock %}
 
-{% block sidebar %}{% endblock %}
 {% block topbar %}{% endblock %}
 {% block mobile_nav %}{% endblock %}
 
@@ -14,7 +13,7 @@
 {% block body_class %}app-main--full{% endblock %}
 
 {% block body %}
-  <div class="app-main--full auth-page">
+  <div class="auth-page">
     <div class="auth-card">
       <div class="auth-card__header">
         <div class="auth-card__logo">K</div>
@@ -25,10 +24,16 @@
       <form action="{{ path('2fa_login_check') }}" method="post" class="auth-form">
         <div class="form-field">
           <label for="code">6-digit code</label>
-          <input type="text" id="code" name="_auth_code" class="form-input" placeholder="000000" inputmode="numeric" autocomplete="off" autofocus required>
+          <input type="text" id="code" name="_auth_code" class="form-input" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" autofocus required>
         </div>
 
-        <button type="submit" class="btn btn--primary">Verify</button>
+        {% if authenticationError is defined and authenticationError %}
+          <div class="form-error">{{ authenticationError }}</div>
+        {% endif %}
+
+        <div class="form-actions">
+          <input type="submit" class="btn btn--primary" value="Verify">
+        </div>
       </form>
 
       <div class="auth-links">

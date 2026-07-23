@@ -1,28 +1,40 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Set Up 2FA | KanjiReview{% endblock %}
+{% block title %}Set Up 2FA | nika{% endblock %}
+
+{% block topbar %}{% endblock %}
+{% block mobile_nav %}{% endblock %}
 
 {% block stylesheets %}
   {{ parent() }}
   <link rel="stylesheet" href="{{ asset('css/pages/auth.css') }}">
 {% endblock %}
 
-{% block body %}
-  <div class="auth-page" style="padding-top:48px">
-    <div class="auth-card" style="max-width:480px;text-align:center">
-      <h1>Two-Factor Authentication</h1>
-      <p>Scan the QR code with Microsoft Authenticator and confirm the code.</p>
+{% block body_class %}app-main--full{% endblock %}
 
-      <div style="margin:24px auto;max-width:256px">
-        <img src="{{ qrCode }}" alt="TOTP QR Code" style="width:100%;height:auto;border-radius:8px">
+{% block body %}
+  <div class="auth-page">
+    <div class="auth-card" style="max-width:480px;text-align:center">
+      <div class="auth-card__header">
+        <div class="auth-card__logo">K</div>
+        <h1>Two-Factor Authentication</h1>
+        <p class="auth-card__subtitle">Scan the QR code with Microsoft Authenticator and confirm the code.</p>
       </div>
 
-      <div style="font-size:13px;color:var(--color-secondary);word-break:break-all;background:var(--color-surface-container-low);padding:8px 12px;border-radius:6px;margin-bottom:24px;font-family:monospace">
+      <div style="margin:24px auto;max-width:256px">
+        <img src="{{ qrCode }}" alt="TOTP QR Code" style="width:100%;height:auto;">
+      </div>
+
+      <div style="font-size:13px;color:var(--color-secondary);word-break:break-all;background:var(--color-surface-container-low);padding:8px 12px;margin-bottom:24px;font-family:monospace;text-align:left">
         {{ secret }}
       </div>
 
-      {{ form_start(form, {attr: {class: 'auth-form', style: 'max-width:280px;margin:0 auto'}}) }}
-        {{ form_row(form.code) }}
+      {{ form_start(form, {attr: {class: 'auth-form', novalidate: true}}) }}
+        <div class="form-field">
+          <label for="{{ form.code.vars.id }}">Authenticator code</label>
+          {{ form_widget(form.code, {attr: {class: 'form-input', placeholder: '000000', inputmode: 'numeric'}}) }}
+          {{ form_errors(form.code) }}
+        </div>
         <button type="submit" class="btn btn--primary">Enable 2FA</button>
       {{ form_end(form) }}
 
