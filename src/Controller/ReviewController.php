@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Kanji;
+use App\Entity\User;
 use App\Repository\KanjiRepository;
 use App\Service\SrsService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,7 +18,12 @@ class ReviewController extends AbstractController
     #[Route('/review', name: 'app_review')]
     public function start(KanjiRepository $kanjiRepo): Response
     {
-        $due = $kanjiRepo->findDueReviews();
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $due = $kanjiRepo->findDueReviews($user);
         $dueCount = count($due);
 
         return $this->render('review/index.html.twig', [
@@ -28,10 +34,15 @@ class ReviewController extends AbstractController
     #[Route('/review/next', name: 'app_review_next', methods: ['GET'])]
     public function next(KanjiRepository $kanjiRepo, Request $request): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
         $level = $request->query->get('level');
         $kanji = $level
-            ? $kanjiRepo->findDueReviewsByLevel($level)
-            : $kanjiRepo->findDueReviews();
+            ? $kanjiRepo->findDueReviewsByLevel($user, $level)
+            : $kanjiRepo->findDueReviews($user);
 
         if (empty($kanji)) {
             return $this->json(['done' => true]);
@@ -86,10 +97,6 @@ class ReviewController extends AbstractController
             'kunyomi' => $kanji->getKunyomi(),
             'jlptLevel' => $kanji->getJlptLevel(),
             'strokeCount' => $kanji->getStrokeCount(),
-            'easeFactor' => $kanji->getEaseFactor(),
-            'interval' => $kanji->getInterval(),
-            'repetitions' => $kanji->getRepetitions(),
-            'nextReviewAt' => $kanji->getNextReviewAt()?->format('Y-m-d'),
         ]);
     }
 }

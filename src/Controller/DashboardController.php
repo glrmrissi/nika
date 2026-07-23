@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\KanjiRepository;
 use App\Repository\ReviewLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,20 +18,31 @@ class DashboardController extends AbstractController
         $user = $this->getUser();
         $tz = $user?->getEffectiveTimezone() ?? 'UTC';
 
-        $due = $kanjiRepo->findDueReviews($tz);
-        $total = $kanjiRepo->count([]);
-        $dueCount = count($due);
+        if ($user instanceof User) {
+            $due = $kanjiRepo->findDueReviews($user, $tz);
+            $total = $kanjiRepo->countSelected($user);
+            $dueCount = count($due);
+            $byLevel = $kanjiRepo->countByLevel($user);
+        } else {
+            $due = [];
+            $total = 0;
+            $dueCount = 0;
+            $byLevel = [];
+        }
+
         $reviewedToday = $reviewLogRepo->countReviewsToday($tz);
         $streak = $reviewLogRepo->countStreakDays($tz);
 
-        $byLevel = $kanjiRepo->countByLevel();
         $totalAll = array_sum(array_column($byLevel, 'total'));
         foreach ($byLevel as &$level) {
             $level['percentage'] = $totalAll > 0 ? round(($level['total'] / $totalAll) * 100) : 0;
         }
         unset($level);
 
-        $recent = $reviewLogRepo->findRecentWithKanji(4);
+        $recent = $reviewLogRepo->findRecentWithKanji(4, $user instanceof User ? $user : null);
+
+        $completedCount = $user instanceof User ? $kanjiRepo->countCompleted($user) : 0;
+        $recentCompleted = $user instanceof User ? $kanjiRepo->findCompleted($user, 6) : [];
 
         $streakDays = [];
         $days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -53,6 +65,9 @@ class DashboardController extends AbstractController
             'userName' => $user?->getName() ?? '',
             'streakDays' => $streakDays,
             'loginSuccess' => $loginSuccess,
+            'hasKanji' => $total > 0,
+            'completedCount' => $completedCount,
+            'recentCompleted' => $recentCompleted,
         ]);
     }
 }

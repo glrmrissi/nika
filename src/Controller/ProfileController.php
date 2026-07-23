@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\NameHistory;
 use App\Entity\User;
 use App\Form\ProfileFormType;
 use App\Repository\KanjiRepository;
@@ -27,13 +28,14 @@ class ProfileController extends AbstractController
         $reviewedToday = $reviewLogRepo->countReviewsToday($tz);
         $streak = $reviewLogRepo->countStreakDays($tz);
         $totalKanji = $kanjiRepo->count([]);
-        $dueCount = count($kanjiRepo->findDueReviews($tz));
+        $dueCount = count($kanjiRepo->findDueReviews($user, $tz));
 
         return $this->render('profile/index.html.twig', [
             'reviewedToday' => $reviewedToday,
             'streak' => $streak,
             'totalKanji' => $totalKanji,
             'dueCount' => $dueCount,
+            'isOwnProfile' => true,
         ]);
     }
 
@@ -41,10 +43,17 @@ class ProfileController extends AbstractController
     public function edit(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
+        $oldName = $user->getName();
         $form = $this->createForm(ProfileFormType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if ($user->getName() !== $oldName) {
+                $entry = new NameHistory();
+                $entry->setUser($user);
+                $entry->setName($oldName);
+                $em->persist($entry);
+            }
             $file = $form->get('avatar')->getData();
             if ($file instanceof UploadedFile) {
                 $this->removeOldAvatar($user);
@@ -77,7 +86,7 @@ class ProfileController extends AbstractController
         $user->setAvatarPath(null);
         $em->flush();
         $this->addFlash('success', 'Avatar removed.');
-        return $this->redirectToRoute('app_profile');
+        return $this->redirectToRoute('app_profile_edit');
     }
 
     #[Route('/auth/me', name: 'app_auth_me')]
