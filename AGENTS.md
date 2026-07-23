@@ -79,29 +79,32 @@ All `#[Route]` attribute except `/2fa` and `/2fa_check` which are YAML-defined i
 - Pure modular CSS in `public/css/`:
   - `base.css` — design tokens (border-radius: 0 on all)
   - `dark.css` — `[data-theme="dark"]` overrides (primary: `#FF453A`)
-  - `layout.css`, `components/{topbar,mobile-nav,ui}.css`, `pages/{auth,dashboard,profile,review}.css`
+  - `layout.css`, `components/{topbar,mobile-nav,ui,tooltip}.css`, `pages/{auth,dashboard,profile,review}.css`
 - Font: Inter (body via Google), Times New Roman serif (headings). Icons: Bootstrap Icons CDN.
 - Dark theme default (`localStorage.getItem('theme') || 'dark'`), toggle in topbar.
 - **No gratuitous padding/margin.** No background highlights on hover — only `border-bottom` or color transitions. No border-radius unless essential.
 - **Topbar nav links**: `border-bottom: 2px solid transparent` — visible on hover (`--color-secondary`) and active (`--color-primary`). No background, no border-radius, padding only `8px 4px`.
 - **Avatar dropdown**: opens on hover (desktop) and click (JS toggles `.topbar__dropdown--open`). Closes on outside click.
 - **Modal**: data-attribute driven (`data-modal`). Defined in `base.js`. Buttons show `(Y)` / `(N)` keyboard hints; Y/y confirms, N/n or Escape cancels.
+- **Tooltip**: `data-tooltip` attribute, 50ms show delay, event delegation on document. CSS + JS in `components/tooltip.css` / `js/components/tooltip.js`. Works on SVG `<rect>`.
+- **Heatmap**: SVG-based (no HTML table). Shared styles in `ui.css` (`.heatmap__svg`, `.heatmap__grid`, `rect[data-level]`). Dashboard + profile each have their own JS.
 - All hardcoded `rgba(r,g,b,x)` replaced with `color-mix(in srgb, var(--color-primary) X%, transparent)` for theme adaptability.
 
-- **Profile is public**. `/profile` shows public info (name, avatar, stats, badges, name history). Own profile shows edit button, email, 2FA section, and camera overlay via `isOwnProfile` variable passed from controller.
+- **Profile is public**. `/profile` shows public info (name, avatar, stats, badges, name history, readme, activity heatmap). Own profile shows edit button, email, 2FA section, and camera overlay via `isOwnProfile`.
 
 ## Architecture
 
-- `src/Entity/{Kanji,NameHistory,ReviewLog,User,UserKanji}.php`
-- `src/Repository/{Kanji,NameHistory,ReviewLog,User}Repository.php`
+- `src/Entity/{Kanji,NameHistory,ReviewLog,User,UserKanji}.php` — `User` has `readme` (TEXT, nullable)
+- `src/Repository/{Kanji,NameHistory,ReviewLog,User}Repository.php` — `ReviewLogRepository` has `countThisWeek/Month/Year()`, `getHeatmapData()`
 - `src/Service/SrsService.php` (SM-2), `DiscordNotifier.php`, `TotpEncryptionService.php`
 - `src/Controller/{Dashboard,Review,Kanji,Profile,Registration,ResetPassword,Security,TwoFactor}Controller.php`
 - `src/Form/{RegistrationForm,ProfileForm,ForgotPassword,ResetPassword,TwoFactorSetup}FormType.php` — `TwoFactorVerifyFormType` is unused dead code
+- `src/Twig/MarkdownExtension.php` — `|markdown` filter using league/commonmark
 - `src/Security/LoginSuccessHandler.php`
 - `src/EventSubscriber/HoneypotSubscriber.php`
 - `src/Doctrine/TotpEncryptionListener.php`
 - `src/Command/{SeedKanjiCommand,CreateAdminCommand}.php`
-- `src/Data/KanjiData.php` — seeded kanji data (581 entries)
+- `src/Data/KanjiData.php` — 1091 kanji (N5–N1)
 - No tests directory exists.
 
 ## Git

@@ -29,12 +29,20 @@ class ProfileController extends AbstractController
         $streak = $reviewLogRepo->countStreakDays($tz);
         $totalKanji = $kanjiRepo->count([]);
         $dueCount = count($kanjiRepo->findDueReviews($user, $tz));
+        $thisWeek = $reviewLogRepo->countThisWeek($user, $tz);
+        $thisMonth = $reviewLogRepo->countThisMonth($user, $tz);
+        $thisYear = $reviewLogRepo->countThisYear($user, $tz);
+        $heatmap = $reviewLogRepo->getHeatmapData($user, $tz);
 
         return $this->render('profile/index.html.twig', [
             'reviewedToday' => $reviewedToday,
             'streak' => $streak,
             'totalKanji' => $totalKanji,
             'dueCount' => $dueCount,
+            'thisWeek' => $thisWeek,
+            'thisMonth' => $thisMonth,
+            'thisYear' => $thisYear,
+            'heatmap' => $heatmap,
             'isOwnProfile' => true,
         ]);
     }

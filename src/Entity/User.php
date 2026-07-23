@@ -65,6 +65,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\Column(length: 8, options: ['default' => 'icon'])]
     private string $kanjiClickAction = 'icon';
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $readme = null;
+
     #[ORM\OneToMany(targetEntity: ReviewLog::class, mappedBy: 'reviewUser')]
     private Collection $reviewLogs;
 
@@ -132,6 +135,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
 
     public function getKanjiClickAction(): string { return $this->kanjiClickAction; }
     public function setKanjiClickAction(string $kanjiClickAction): self { $this->kanjiClickAction = $kanjiClickAction; return $this; }
+
+    public function getReadme(): ?string { return $this->readme; }
+    public function setReadme(?string $readme): self { $this->readme = $readme; return $this; }
 
     public function isTotpEnabled(): bool { return $this->totpEnabled; }
     public function setTotpEnabled(bool $totpEnabled): self { $this->totpEnabled = $totpEnabled; return $this; }
