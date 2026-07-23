@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\ReviewLog;
+use App\Entity\User;
+use App\Entity\UserKanji;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -67,13 +69,18 @@ class ReviewLogRepository extends ServiceEntityRepository
         return $streak;
     }
 
-    public function findRecentWithKanji(int $limit = 4): array
+    public function findRecentWithKanji(int $limit = 4, ?User $user = null): array
     {
         $qb = $this->createQueryBuilder('r')
             ->join('r.kanji', 'k')
-            ->select('k.character', 'k.meanings', 'k.easeFactor', 'k.interval', 'k.repetitions', 'r.reviewedAt')
+            ->select('k.character', 'k.meanings', 'r.reviewedAt')
             ->orderBy('r.reviewedAt', 'DESC')
-            ->setMaxResults($limit);
+            ->setMaxResults($limit * 2);
+
+        if ($user) {
+            $qb->andWhere('r.reviewUser = :user')
+                ->setParameter('user', $user);
+        }
 
         $rows = $qb->getQuery()->getResult();
 
@@ -86,12 +93,30 @@ class ReviewLogRepository extends ServiceEntityRepository
             }
             $seen[$char] = true;
 
+            if (count($result) >= $limit) {
+                break;
+            }
+
             $meanings = explode(',', $row['meanings']);
-            $mastery = $this->calculateMastery(
-                $row['repetitions'],
-                $row['interval'],
-                $row['easeFactor'],
-            );
+
+            $kanjiEntity = $this->getEntityManager()
+                ->getRepository(\App\Entity\Kanji::class)
+                ->findOneBy(['character' => $char]);
+
+            $mastery = 0;
+            if ($user && $kanjiEntity) {
+                $uk = $this->getEntityManager()
+                    ->getRepository(UserKanji::class)
+                    ->findOneBy(['user' => $user, 'kanji' => $kanjiEntity]);
+
+                if ($uk) {
+                    $mastery = $this->calculateMastery(
+                        $uk->getRepetitions(),
+                        $uk->getInterval(),
+                        $uk->getEaseFactor(),
+                    );
+                }
+            }
 
             $result[] = [
                 'character' => $char,

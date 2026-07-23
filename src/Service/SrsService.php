@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Kanji;
 use App\Entity\ReviewLog;
 use App\Entity\User;
+use App\Entity\UserKanji;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -19,23 +20,35 @@ class SrsService
     {
         $quality = max(0, min(5, $quality));
 
+        $user = $this->security->getUser();
+        if (!$user instanceof User) {
+            throw new \RuntimeException('User must be logged in');
+        }
+
+        $userKanji = $this->em->getRepository(UserKanji::class)->findOneBy([
+            'user' => $user,
+            'kanji' => $kanji,
+        ]);
+
+        if (!$userKanji) {
+            $userKanji = new UserKanji();
+            $userKanji->setUser($user);
+            $userKanji->setKanji($kanji);
+            $this->em->persist($userKanji);
+        }
+
         $log = new ReviewLog();
         $log->setKanji($kanji);
         $log->setQuality($quality);
-
-        $user = $this->security->getUser();
-        if ($user instanceof User) {
-            $log->setReviewUser($user);
-        }
-
+        $log->setReviewUser($user);
         $this->em->persist($log);
 
-        $ef = $kanji->getEaseFactor();
-        $interval = $kanji->getInterval();
-        $reps = $kanji->getRepetitions();
+        $ef = $userKanji->getEaseFactor();
+        $interval = $userKanji->getInterval();
+        $reps = $userKanji->getRepetitions();
 
         $newEf = $this->calculateEaseFactor($ef, $quality);
-        $kanji->setEaseFactor($newEf);
+        $userKanji->setEaseFactor($newEf);
 
         if ($quality < 3) {
             $reps = 0;
@@ -49,12 +62,13 @@ class SrsService
             };
         }
 
-        $kanji->setRepetitions($reps);
-        $kanji->setInterval($interval);
+        $userKanji->setRepetitions($reps);
+        $userKanji->setInterval($interval);
+        $userKanji->setNextReviewAt(new \DateTime("+{$interval} days"));
 
-        $nextReview = new \DateTime("+{$interval} days");
-        $kanji->setNextReviewAt($nextReview);
-        $kanji->setUpdatedAt(new \DateTime());
+        if ($reps >= 3 && $interval >= 30 && $newEf >= 2.5) {
+            $userKanji->setIsComplete(true);
+        }
 
         $this->em->flush();
     }
