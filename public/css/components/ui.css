@@ -60,6 +60,11 @@
   color: var(--color-primary);
 }
 
+.badge--secondary {
+  background: var(--color-surface-container);
+  color: var(--color-secondary);
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -193,4 +198,51 @@
   font-weight: 600;
   line-height: 28px;
   color: var(--color-on-surface);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.modal-overlay--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: var(--color-surface-container-lowest);
+  padding: 24px;
+  min-width: 300px;
+  max-width: 420px;
+  box-shadow: var(--shadow-modal);
+}
+
+.modal__title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--color-on-surface);
+}
+
+.modal__text {
+  font-size: 14px;
+  color: var(--color-secondary);
+  margin-bottom: 24px;
+  line-height: 20px;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
