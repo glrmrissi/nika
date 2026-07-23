@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Profile | KanjiReview{% endblock %}
+{% block title %}Edit Profile | nika{% endblock %}
 
 {% block stylesheets %}
   {{ parent() }}
@@ -14,29 +14,37 @@
       <h2 class="page-title">Edit Profile</h2>
     </div>
 
-    {{ form_start(form, {attr: {novalidate: true, class: 'profile__form'}}) }}
-      <div class="profile__upload-area" id="upload-area">
-        <div class="profile__upload-preview-wrap">
-          <div class="profile__upload-preview" id="avatar-preview">
-            {% if app.user.avatarPath %}
-              <img src="{{ asset(app.user.avatarPath) }}" alt="Avatar">
-            {% else %}
-              {{ app.user.name|first|upper }}
-            {% endif %}
-          </div>
-          <label for="profile_form_avatar" class="profile__upload-overlay">
-            <i class="bi bi-camera"></i>
-          </label>
+    <div class="profile__upload-area" id="upload-area">
+      <div class="profile__upload-preview-wrap">
+        <div class="profile__upload-preview" id="avatar-preview">
           {% if app.user.avatarPath %}
-            <form method="post" action="{{ path('app_profile_avatar_remove') }}" style="display:contents" onsubmit="return confirm('Remove avatar?')">
-              <button type="submit" class="profile__upload-remove" title="Remove photo">
-                <i class="bi bi-x"></i>
-              </button>
-            </form>
+            <img src="{{ asset(app.user.avatarPath) }}" alt="Avatar">
+          {% else %}
+            {{ app.user.name|first|upper }}
           {% endif %}
         </div>
-        {{ form_widget(form.avatar, {attr: {class: 'profile__file-input', 'data-action': 'change->preview'}}) }}
+        <label for="profile_form_avatar" class="profile__upload-overlay">
+          <i class="bi bi-camera"></i>
+        </label>
+        {% if app.user.avatarPath %}
+          <form method="post" action="{{ path('app_profile_avatar_remove') }}" id="remove-avatar-form">
+            <button type="button"
+              class="profile__upload-remove"
+              title="Remove photo"
+              data-modal
+              data-modal-title="Remove Avatar"
+              data-modal-message="Remove your profile photo?"
+              data-modal-confirm="Remove"
+              data-modal-cancel="Cancel">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        {% endif %}
       </div>
+    </div>
+
+    {{ form_start(form, {attr: {novalidate: true, class: 'profile__form'}}) }}
+      {{ form_widget(form.avatar, {attr: {class: 'profile__file-input', 'data-action': 'change->preview'}}) }}
       {{ form_errors(form.avatar) }}
 
       <div class="profile__dropzone" id="dropzone">

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Profile | KanjiReview{% endblock %}
+{% block title %}Profile | nika{% endblock %}
 
 {% block stylesheets %}
   {{ parent() }}
@@ -11,7 +11,11 @@
   <div class="profile__banner"></div>
 
   <section class="profile__header">
+    {% if isOwnProfile %}
     <a href="{{ path('app_profile_edit') }}" class="profile__avatar-wrap">
+    {% else %}
+    <div class="profile__avatar-wrap">
+    {% endif %}
       <div class="profile__avatar">
         {% if app.user.avatarPath %}
           <img src="{{ asset(app.user.avatarPath) }}" alt="Avatar">
@@ -19,29 +23,39 @@
           {{ app.user.name|first|upper }}
         {% endif %}
       </div>
+      {% if isOwnProfile %}
       <div class="profile__avatar-overlay">
         <i class="bi bi-camera"></i>
       </div>
+      {% endif %}
+    {% if isOwnProfile %}
     </a>
+    {% else %}
+    </div>
+    {% endif %}
     <div class="profile__header-info">
       <h2 class="page-title">{{ app.user.name }}</h2>
+      {% if isOwnProfile %}
       <p class="page-subtitle">{{ app.user.email }}</p>
+      {% endif %}
       <div class="profile__badge-group">
         {% if app.user.totpEnabled %}
           <span class="badge badge--primary"><i class="bi bi-shield-check"></i> 2FA Active</span>
         {% else %}
-          <span class="badge"><i class="bi bi-shield"></i> 2FA Inactive</span>
+          <span class="badge badge--secondary"><i class="bi bi-shield"></i> 2FA Inactive</span>
         {% endif %}
         {% if app.user.isVerified %}
           <span class="badge badge--primary"><i class="bi bi-patch-check"></i> Verified</span>
         {% endif %}
       </div>
     </div>
+    {% if isOwnProfile %}
     <div class="profile__header-actions">
       <a href="{{ path('app_profile_edit') }}" class="btn btn--primary btn--sm">
         <i class="bi bi-pencil"></i> Edit
       </a>
     </div>
+    {% endif %}
   </section>
 
   <div class="profile__stats">
@@ -67,43 +81,49 @@
     </article>
   </div>
 
+  {% if isOwnProfile %}
   <div class="profile__section">
-    <h3 class="section-title"><i class="bi bi-gear"></i> Account</h3>
-    <div class="profile__info">
-      <div class="profile__row">
-        <div class="profile__row-icon"><i class="bi bi-envelope"></i></div>
-        <div class="profile__row-content">
-          <span class="profile__row-label">Email</span>
-          <span class="profile__row-value">{{ app.user.email }}</span>
-        </div>
+    <h3 class="section-title">Account</h3>
+    <div class="account-card">
+      <div class="account-card__email">
+        <span class="account-card__email-address">{{ app.user.email }}</span>
       </div>
-      <div class="profile__row">
-        <div class="profile__row-icon"><i class="bi bi-patch-check"></i></div>
-        <div class="profile__row-content">
-          <span class="profile__row-label">Verified</span>
-          <span class="profile__row-value">{{ app.user.isVerified ? 'Yes' : 'No' }}</span>
-        </div>
-      </div>
-      <div class="profile__row">
-        <div class="profile__row-icon"><i class="bi bi-calendar"></i></div>
-        <div class="profile__row-content">
-          <span class="profile__row-label">Member since</span>
-          <span class="profile__row-value">{{ app.user.createdAt|date('M d, Y') }}</span>
-        </div>
-      </div>
-      <div class="profile__row">
-        <div class="profile__row-icon"><i class="bi bi-shield-lock"></i></div>
-        <div class="profile__row-content">
-          <span class="profile__row-label">Two-factor authentication</span>
-          <span class="profile__row-value">
-            {% if app.user.totpEnabled %}
-              Active
-            {% else %}
-              <a href="{{ path('app_2fa_setup') }}" style="color:var(--color-primary)">Set up</a>
-            {% endif %}
-          </span>
-        </div>
+      <div class="account-card__meta">
+        <span class="account-card__meta-item">
+          <i class="bi bi-patch-check"></i>
+          {{ app.user.isVerified ? 'Verified' : 'Not verified' }}
+        </span>
+        <span class="account-card__meta-item">
+          <i class="bi bi-calendar"></i>
+          Member since {{ app.user.createdAt|date('M d, Y') }}
+        </span>
+        <span class="account-card__meta-item">
+          <i class="bi bi-shield-lock"></i>
+          {% if app.user.totpEnabled %}
+            2FA Active
+          {% else %}
+            <a href="{{ path('app_2fa_setup') }}">Set up 2FA</a>
+          {% endif %}
+        </span>
       </div>
     </div>
   </div>
+  {% endif %}
+
+  {% if app.user.nameHistories is not empty %}
+  <div class="profile__section">
+    <h3 class="section-title"><i class="bi bi-clock-history"></i> Name History</h3>
+    <div class="profile__info">
+      {% for entry in app.user.nameHistories %}
+      <div class="profile__row">
+        <div class="profile__row-icon"><i class="bi bi-person"></i></div>
+        <div class="profile__row-content">
+          <span class="profile__row-value">{{ entry.name }}</span>
+          <span class="profile__row-label">{{ entry.changedAt|date('M d, Y') }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 {% endblock %}
