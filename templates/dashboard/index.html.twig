@@ -18,15 +18,15 @@
     <p class="page-subtitle">Here is your progress today.</p>
   </section>
 
-  <div class="dashboard__bento">
+  <div class="dashboard__grid">
 
-    <article class="stat-card bento--mastery">
-      <div class="mastery__header">
+    <article class="d-card d-card--mastery">
+      <div class="d-card__header">
         <div>
-          <h3 class="section-title">Mastery Overview</h3>
-          <p class="page-subtitle" style="font-size:15px;">Current progress across all levels.</p>
+          <h3 class="section-title" style="margin-bottom:2px;">Mastery Overview</h3>
+          <p class="d-card__subtitle">Current progress across all levels.</p>
         </div>
-        <span class="badge badge--primary">Total: {{ totalCount }} kanji</span>
+        <span class="d-badge">Total: {{ totalCount }} kanji</span>
       </div>
       <div class="mastery__progress">
         {% if byLevel is empty %}
@@ -40,8 +40,8 @@
                 <span>Kanji {{ level.jlptLevel }}</span>
                 <span>{{ level.total }} kanji</span>
               </div>
-              <div class="progress-bar">
-                <div class="progress-bar__fill" style="width: {{ level.percentage }}%; opacity: {{ 0.4 + (level.percentage / 100) * 0.6 }};"></div>
+              <div class="pbar">
+                <div class="pbar__fill" style="width: {{ level.percentage }}%; opacity: {{ 0.4 + (level.percentage / 100) * 0.6 }};"></div>
               </div>
             </div>
           {% endfor %}
@@ -49,9 +49,8 @@
       </div>
     </article>
 
-    <article class="stat-card bento--streak">
+    <article class="d-card d-card--streak">
       <div class="streak__content">
-        <div class="streak__glow"></div>
         <i class="bi bi-fire streak__icon"></i>
         <h3 class="streak__count">{{ streak }}</h3>
         <p class="streak__label">Day Streak</p>
@@ -65,68 +64,59 @@
       </div>
     </article>
 
-    <article class="stat-card bento--recent">
-      <div class="recent__header">
-        <h3 class="section-title">Recently Studied</h3>
-        <a href="#" class="btn btn--sm" style="color:var(--color-primary);font-weight:500;">View All</a>
+    <article class="d-card d-card--recent">
+      <div class="d-card__header">
+        <h3 class="section-title" style="margin-bottom:2px;">Recently Studied</h3>
+        <a href="#" style="font-size:13px;color:var(--color-primary);font-weight:500;text-decoration:none;">View All</a>
       </div>
-      <div class="card-grid">
+      <div class="recent__grid">
         {% for item in recent %}
-          <div class="kanji-card">
-            <span class="kanji-card__char">{{ item.character }}</span>
-            <span class="kanji-card__label">{{ item.meaning }}</span>
-            <div class="kanji-card__progress">
-              <div class="progress-bar__fill" style="width: {{ item.mastery }}%;"></div>
-            </div>
+          <div class="rcard">
+            <span class="rcard__char">{{ item.character }}</span>
+            <span class="rcard__meaning">{{ item.meaning }}</span>
+            <div class="rcard__bar"><div class="rcard__bar-fill" style="width:{{ item.mastery }}%"></div></div>
           </div>
         {% else %}
-          <p style="grid-column:1/-1;color:var(--color-secondary);">No kanji studied yet.</p>
+          <p style="grid-column:1/-1;color:var(--color-secondary);font-size:14px;text-align:center;padding:24px 0;">No kanji studied yet.</p>
         {% endfor %}
       </div>
     </article>
 
-    {% if completedCount > 0 %}
-    <article class="stat-card bento--trophy">
-      <div class="trophy__header">
-        <div>
-          <h3 class="section-title">Trophy Case</h3>
-          <p class="page-subtitle" style="font-size:15px;">Kanji you have mastered.</p>
+    <article class="d-card d-card--reviews">
+      <div class="d-card__header" style="margin-bottom:20px;">
+        <h3 class="section-title" style="margin-bottom:2px;">Reviews</h3>
+        <i class="bi bi-arrow-repeat" style="color:var(--color-secondary);font-size:18px;"></i>
+      </div>
+      <div class="rstats">
+        <div class="rstats__item">
+          <span class="rstats__value">{{ thisWeek }}</span>
+          <span class="rstats__label">This Week</span>
         </div>
-        <i class="bi bi-trophy" style="font-size:24px;color:var(--color-primary);"></i>
-      </div>
-      <div class="trophy__count">
-        <span style="font-size:36px;font-weight:700;font-family:var(--font-heading);color:var(--color-primary);">{{ completedCount }}</span>
-        <p style="color:var(--color-secondary);margin-top:2px;">completed kanji</p>
-      </div>
-      {% if recentCompleted is not empty %}
-      <div class="trophy__recent" style="margin-top:16px;">
-        <p style="font-size:13px;color:var(--color-secondary);margin-bottom:8px;">Recent</p>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          {% for item in recentCompleted %}
-          <span style="font-size:20px;padding:4px 8px;background:var(--color-surface-container);border-radius:var(--radius-md);" title="{{ item.meanings|split(',')|first|trim }}">{{ item.character }}</span>
-          {% endfor %}
+        <div class="rstats__item">
+          <span class="rstats__value">{{ thisMonth }}</span>
+          <span class="rstats__label">This Month</span>
+        </div>
+        <div class="rstats__item">
+          <span class="rstats__value">{{ thisYear }}</span>
+          <span class="rstats__label">This Year</span>
+        </div>
+        <div class="rstats__item">
+          <span class="rstats__value">{{ reviewedToday }}</span>
+          <span class="rstats__label">Today</span>
         </div>
       </div>
-      {% endif %}
-    </article>
-    {% endif %}
-
-    <article class="stat-card bento--ranking">
-      <div class="ranking__header">
-        <h3 class="section-title">Reviews Today</h3>
-        <i class="bi bi-arrow-repeat" style="color:var(--color-secondary);font-size:20px;"></i>
+      <div class="rstats__due">
+        <span class="rstats__due-value">{{ dueCount }}</span>
+        <span class="rstats__due-label">kanji due</span>
       </div>
-      <div class="ranking__list" style="padding:24px 0;text-align:center;">
-        <span style="font-size:48px;font-weight:700;font-family:var(--font-heading);color:var(--color-primary);">{{ dueCount }}</span>
-        <p style="color:var(--color-secondary);margin-top:4px;">kanji due</p>
-        <div style="margin-top:8px;font-size:14px;color:var(--color-secondary);">
-          {{ reviewedToday }} reviewed today &middot; {{ streak }} day streak
-        </div>
-        <a href="{{ path('app_review') }}" class="btn btn--primary" style="margin-top:20px;width:100%;">
-          <i class="bi bi-eye"></i> Review Now
-        </a>
-      </div>
+      <a href="{{ path('app_review') }}" class="btn btn--primary" style="display:flex;width:100%;padding:12px;font-size:15px;">
+        <i class="bi bi-eye"></i> Review Now
+      </a>
     </article>
 
   </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
 {% endblock %}

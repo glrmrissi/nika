@@ -46,7 +46,7 @@ function submitReview(quality) {
 }
 
 function showDone() {
-  document.getElementById('kanji-char').textContent = '\uD83C\uDF89';
+  document.getElementById('kanji-char').innerHTML = '<img src="/assets/anime-happy.png" alt="done" class="review-done-img">';
   document.getElementById('kanji-info').classList.remove('review-card__info--visible');
   document.getElementById('quality-buttons').style.display = 'none';
   document.getElementById('show-answer-btn').style.display = 'none';

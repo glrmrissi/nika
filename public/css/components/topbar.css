@@ -63,7 +63,7 @@
 
 .topbar__end {
   display: flex;
-  gap: 12px;
+  gap: 4px;
 }
 
 .topbar__icon-btn {
@@ -72,19 +72,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
   color: var(--color-secondary);
-  transition: all var(--transition-fast);
+  transition: color var(--transition-fast);
   font-size: 18px;
 }
 
 .topbar__icon-btn:hover {
   color: var(--color-on-surface);
-  background: rgba(228, 226, 228, 0.3);
-}
-
-[data-theme="dark"] .topbar__icon-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
 }
 
 .topbar__user-menu {

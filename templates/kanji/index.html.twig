@@ -31,10 +31,10 @@
 .kanji-grid__char { font-size: 28px; font-weight: 500; line-height: 1.2; }
 .kanji-grid__reading { font-size: 12px; color: var(--color-secondary); margin-top: 4px; }
 .kanji-grid__meaning { font-size: 12px; color: var(--color-on-surface-variant); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.kanji-grid__trophy { position: absolute; top: 2px; right: 2px; font-size: 14px; color: var(--color-primary); line-height: 1; }
-.kanji-grid__search { position: absolute; bottom: 4px; right: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--color-secondary); cursor: pointer; border-radius: var(--radius-sm); transition: color var(--transition-fast); line-height: 1; text-decoration: none; }
-.kanji-grid__search:hover { color: var(--color-primary); }
-.kanji-grid__search--hidden { display: none; }
+.kanji-grid__trophy { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; line-height: 1; }
+.kanji-grid__trophy img { width: 18px; height: 18px; object-fit: contain; display: block; }
+.kanji-grid__search-btn { position: absolute; bottom: 4px; right: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--color-secondary); cursor: pointer; border-radius: var(--radius-sm); transition: color var(--transition-fast); line-height: 1; text-decoration: none; }
+.kanji-grid__search-btn:hover { color: var(--color-primary); }
 .kanji-grid__select { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--color-outline-variant); background: var(--color-surface-container-lowest); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--color-on-primary); cursor: pointer; transition: all var(--transition-fast); line-height: 1; padding: 0; }
 .kanji-grid__select:hover { border-color: var(--color-primary); }
 .kanji-grid__select--on { background: var(--color-primary); border-color: var(--color-primary); }
@@ -55,8 +55,9 @@
 .kanji-modal__kunyomi { color: #34c759; }
 .kanji-modal__meanings { font-size: 16px; color: var(--color-on-surface); margin-bottom: 8px; }
 .kanji-modal__meta { font-size: 12px; color: var(--color-secondary); }
-.kanji-modal__img-search { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--color-secondary); margin-top: 8px; text-decoration: none; transition: color var(--transition-fast); }
+.kanji-modal__img-search { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--color-secondary); text-decoration: none; transition: color var(--transition-fast); }
 .kanji-modal__img-search:hover { color: var(--color-primary); }
+.kanji-modal__searches { display: flex; gap: 16px; justify-content: center; margin-top: 8px; }
 .kanji-modal__actions { display: flex; gap: 8px; margin-top: 20px; justify-content: center; }
 .kanji-modal__btn { padding: 8px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); border: none; }
 .kanji-modal__btn--primary { background: var(--color-primary); color: var(--color-on-primary); }
@@ -83,7 +84,7 @@
 <div class="kanji-browser">
   <div class="kanji-browser__header">
     <h2 class="page-title">Kanji</h2>
-    <p class="page-subtitle">Browse kanji JLPT N5 to N1. Click the circle to select for study. {{ kanjiClickAction == 'auto' ? 'Click the kanji to search images.' : 'Click the image icon to search images.' }}</p>
+    <p class="page-subtitle">Browse kanji JLPT N5 to N1. Click the circle to select for study. Click the external link icon to open in Jisho.</p>
   </div>
 
   <div class="kanji-browser__tabs" id="tabs">
@@ -122,7 +123,9 @@
     </div>
     <div class="kanji-modal__meanings" id="modal-meanings"></div>
     <div class="kanji-modal__meta" id="modal-meta"></div>
-    <a href="#" class="kanji-modal__img-search" id="modal-img-search" target="_blank" rel="noopener">Search images <i class="bi bi-box-arrow-up-right"></i></a>
+    <div class="kanji-modal__searches">
+      <a href="#" class="kanji-modal__img-search" id="modal-search-jisho" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Open in Jisho</a>
+    </div>
     <div class="kanji-modal__actions" id="modal-actions"></div>
   </div>
 </div>
@@ -140,7 +143,7 @@ var isAuthenticated = {{ app.user ? 'true' : 'false' }};
 var kanjiClickAction = '{{ kanjiClickAction }}';
 
 function imageSearchUrl(char) {
-  return 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(char);
+  return 'https://jisho.org/search/' + encodeURIComponent(char);
 }
 
 function getCacheKey(page, level, status) {
@@ -233,21 +236,21 @@ function renderKanji(data) {
     var selected = k.selected ? ' kanji-grid__item--selected' : '';
     var done = k.done ? ' kanji-grid__item--done' : '';
     var selDot = k.selected ? ' kanji-grid__select--on' : '';
-    var trophy = k.done ? '<span class="kanji-grid__trophy">\u{1F3C6}</span>' : '';
+    var trophy = k.done ? '<span class="kanji-grid__trophy"><img src="{{ asset('assets/anime-happy.png') }}" alt="done"></span>' : '';
     var char = k.character.replace(/'/g, "\\'");
     var kun = (k.kunyomi || '').replace(/'/g, "\\'");
     var mng = meaning.replace(/'/g, "\\'");
     var lvl = (k.jlptLevel || '').replace(/'/g, "\\'");
     var detailClick = 'showDetail(' + k.id + ',\'' + char + '\',\'' + onyomi.replace(/'/g, "\\'") + '\',\'' + kun + '\',\'' + mng + '\',\'' + lvl + '\',' + (k.selected ? 1 : 0) + ',' + (k.done ? 1 : 0) + ')';
 
-    var searchIconHtml = '<a href="' + imageSearchUrl(k.character) + '" target="_blank" rel="noopener" class="kanji-grid__search' + (kanjiClickAction === 'auto' ? ' kanji-grid__search--hidden' : '') + '" onclick="event.stopPropagation()" title="Search images"><i class="bi bi-image"></i></a>';
+    var searchIcons = '<a href="' + imageSearchUrl(k.character) + '" target="_blank" rel="noopener" class="kanji-grid__search-btn" onclick="event.stopPropagation()" title="Open in Jisho"><i class="bi bi-box-arrow-up-right"></i></a>';
 
     html += '<div class="kanji-grid__item' + selected + done + '" data-id="' + k.id + '" onclick="' + (kanjiClickAction === 'auto' ? 'window.open(\'' + imageSearchUrl(k.character) + '\',\'_blank\');event.stopPropagation()' : detailClick) + '">';
     html += '<div class="kanji-grid__char" onclick="' + (kanjiClickAction === 'auto' ? 'window.open(\'' + imageSearchUrl(k.character) + '\',\'_blank\');event.stopPropagation()' : 'event.stopPropagation()') + '">' + k.character + '</div>';
     html += '<div class="kanji-grid__reading" onclick="' + (kanjiClickAction === 'auto' ? detailClick + ';event.stopPropagation()' : '') + '">' + onyomi + '</div>';
     html += '<div class="kanji-grid__meaning" onclick="' + (kanjiClickAction === 'auto' ? detailClick + ';event.stopPropagation()' : '') + '">' + meaning + '</div>';
     html += trophy;
-    html += searchIconHtml;
+    html += searchIcons;
     html += '<span class="kanji-grid__select' + selDot + '" onclick="event.stopPropagation();toggleSelect(' + k.id + ', this)" data-selected="' + (k.selected ? '1' : '0') + '">' + (k.selected ? '\u2713' : '') + '</span>';
     html += '</div>';
   });
@@ -281,7 +284,7 @@ function showDetail(id, char, onyomi, kunyomi, meanings, level, selected, done) 
   document.getElementById('modal-kunyomi').textContent = '\u8A13: ' + kunyomi;
   document.getElementById('modal-meanings').textContent = meanings;
   document.getElementById('modal-meta').textContent = level || '';
-  document.getElementById('modal-img-search').href = imageSearchUrl(char);
+  document.getElementById('modal-search-jisho').href = imageSearchUrl(char);
 
   var actions = document.getElementById('modal-actions');
   if (!isAuthenticated) {

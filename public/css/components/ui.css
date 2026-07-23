@@ -246,3 +246,56 @@
   gap: 8px;
   justify-content: flex-end;
 }
+
+.heatmap__grid {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.heatmap__svg {
+  display: block;
+  height: auto;
+  overflow: visible;
+}
+
+.heatmap__svg .hm-month {
+  font-size: 10px;
+  fill: var(--color-secondary);
+}
+
+.heatmap__svg .hm-day {
+  font-size: 10px;
+  fill: var(--color-secondary);
+  text-anchor: end;
+  dominant-baseline: central;
+}
+
+.heatmap__legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-secondary);
+}
+
+.heatmap__legend-label {
+  font-size: 10px;
+}
+
+.heatmap__legend .hm-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+}
+
+rect[data-level="0"] { fill: var(--color-surface-container); }
+rect[data-level="1"] { fill: color-mix(in srgb, var(--color-primary) 15%, var(--color-surface-container)); }
+rect[data-level="2"] { fill: color-mix(in srgb, var(--color-primary) 35%, var(--color-surface-container)); }
+rect[data-level="3"] { fill: color-mix(in srgb, var(--color-primary) 60%, var(--color-surface-container)); }
+rect[data-level="4"] { fill: var(--color-primary); }
+
+.hm-swatch[data-level="0"] { background-color: var(--color-surface-container); }
+.hm-swatch[data-level="1"] { background-color: color-mix(in srgb, var(--color-primary) 15%, var(--color-surface-container)); }
+.hm-swatch[data-level="2"] { background-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-surface-container)); }
+.hm-swatch[data-level="3"] { background-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-surface-container)); }
+.hm-swatch[data-level="4"] { background-color: var(--color-primary); }

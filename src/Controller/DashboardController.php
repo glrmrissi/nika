@@ -33,6 +33,16 @@ class DashboardController extends AbstractController
         $reviewedToday = $reviewLogRepo->countReviewsToday($tz);
         $streak = $reviewLogRepo->countStreakDays($tz);
 
+        if ($user instanceof User) {
+            $thisWeek = $reviewLogRepo->countThisWeek($user, $tz);
+            $thisMonth = $reviewLogRepo->countThisMonth($user, $tz);
+            $thisYear = $reviewLogRepo->countThisYear($user, $tz);
+        } else {
+            $thisWeek = 0;
+            $thisMonth = 0;
+            $thisYear = 0;
+        }
+
         $totalAll = array_sum(array_column($byLevel, 'total'));
         foreach ($byLevel as &$level) {
             $level['percentage'] = $totalAll > 0 ? round(($level['total'] / $totalAll) * 100) : 0;
@@ -68,6 +78,9 @@ class DashboardController extends AbstractController
             'hasKanji' => $total > 0,
             'completedCount' => $completedCount,
             'recentCompleted' => $recentCompleted,
+            'thisWeek' => $thisWeek,
+            'thisMonth' => $thisMonth,
+            'thisYear' => $thisYear,
         ]);
     }
 }
