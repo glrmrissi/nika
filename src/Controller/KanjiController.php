@@ -17,7 +17,12 @@ class KanjiController extends AbstractController
     #[Route('/kanji', name: 'app_kanji_list')]
     public function index(): Response
     {
-        return $this->render('kanji/index.html.twig');
+        $user = $this->getUser();
+        $kanjiClickAction = $user ? $user->getKanjiClickAction() : 'icon';
+
+        return $this->render('kanji/index.html.twig', [
+            'kanjiClickAction' => $kanjiClickAction,
+        ]);
     }
 
     #[Route('/api/kanji', name: 'app_api_kanji', methods: ['GET'])]

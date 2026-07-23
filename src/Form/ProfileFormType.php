@@ -31,6 +31,16 @@ class ProfileFormType extends AbstractType
                 'choices' => $this->getTimezoneChoices(),
                 'label' => 'Timezone',
             ])
+            ->add('kanjiClickAction', ChoiceType::class, [
+                'required' => true,
+                'expanded' => true,
+                'multiple' => false,
+                'choices' => [
+                    'Show image icon on kanji card' => 'icon',
+                    'Click kanji to search images' => 'auto',
+                ],
+                'label' => 'Kanji image search',
+            ])
             ->add('avatar', FileType::class, [
                 'mapped' => false,
                 'required' => false,

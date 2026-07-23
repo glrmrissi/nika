@@ -62,6 +62,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\Column(length: 64, nullable: true)]
     private ?string $timezone = null;
 
+    #[ORM\Column(length: 8, options: ['default' => 'icon'])]
+    private string $kanjiClickAction = 'icon';
+
     #[ORM\OneToMany(targetEntity: ReviewLog::class, mappedBy: 'reviewUser')]
     private Collection $reviewLogs;
 
@@ -126,6 +129,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     public function setTimezone(?string $timezone): self { $this->timezone = $timezone; return $this; }
 
     public function getEffectiveTimezone(): string { return $this->timezone ?: date_default_timezone_get(); }
+
+    public function getKanjiClickAction(): string { return $this->kanjiClickAction; }
+    public function setKanjiClickAction(string $kanjiClickAction): self { $this->kanjiClickAction = $kanjiClickAction; return $this; }
 
     public function isTotpEnabled(): bool { return $this->totpEnabled; }
     public function setTotpEnabled(bool $totpEnabled): self { $this->totpEnabled = $totpEnabled; return $this; }
