@@ -1,8 +1,10 @@
 scheb_two_factor:
     security_tokens:
         - Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken
+        - Symfony\Component\Security\Core\Authentication\Token\RememberMeToken
+        - Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken
     totp:
         enabled: true
-        issuer: KanjiReview
-        server_name: '%env(DEFAULT_URI)%'
+        issuer: nika
+        server_name: 'localhost'
         template: security/two_factor_verify.html.twig
