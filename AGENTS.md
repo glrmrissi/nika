@@ -51,7 +51,7 @@ All `#[Route]` attribute except `/2fa` and `/2fa_check` which are YAML-defined i
 - **CSRF**: `framework.csrf_protection` with stateless tokens (`submit`, `authenticate`, `logout`). Form types set `csrf_protection: false`; `security.yaml form_login` has `enable_csrf: false` (SameOriginCsrfTokenManager incompatible without Stimulus/UX). 2FA forms also disable CSRF.
 - **Password rules**: server min 8 with uppercase+lowercase+digit. Hashed via `UserPasswordHasherInterface`.
 - **Anti-bot**: login form has hidden honeypot fields (`website`, `confirm_email`). `HoneypotSubscriber` checks at priority 20 and 403s + Discord notify if filled.
-- **2FA (TOTP)**: `scheb/2fa-bundle` + `scheb/2fa-totp`. `security_tokens` must include `UsernamePasswordToken` (from `FormLoginAuthenticator::createToken()`) alongside `PostAuthenticationToken` and `RememberMeToken`. `auth_form_path` and `check_path` in `security.yaml` two_factor config are literal paths (`/2fa`, `/2fa_check`), not route names — `httpUtils->createRedirectResponse()` expects paths. Secret stored encrypted via `TotpEncryptionListener` (postLoad/prePersist/preUpdate). QR codes via `endroid/qr-code-bundle`. `TotpEncryptionService` uses `aes-256-gcm` with key derived via `hash('sha256', APP_SECRET . ':totp-pepper-v1', true)`. `OTPHP\TOTP` is a transitive dependency (from `scheb/2fa-totp`) used directly in the setup controller.
+- **2FA (TOTP)**: `scheb/2fa-bundle` + `scheb/2fa-totp`. `security_tokens` in `scheb_2fa.yaml` MUST include `UsernamePasswordToken` because `FormLoginAuthenticator::createToken()` returns `UsernamePasswordToken` — if missing, `AuthenticatedTokenCondition` silently skips 2FA (no error, no redirect). Also include `PostAuthenticationToken` and `RememberMeToken`. `auth_form_path` and `check_path` in `security.yaml` two_factor config are literal paths (`/2fa`, `/2fa_check`), not route names — `httpUtils->createRedirectResponse()` expects paths. Secret stored encrypted via `TotpEncryptionListener` (postLoad/prePersist/preUpdate). QR codes via `endroid/qr-code-bundle`. `TotpEncryptionService` uses `aes-256-gcm` with key derived via `hash('sha256', APP_SECRET . ':totp-pepper-v1', true)`. `OTPHP\TOTP` is a transitive dependency (from `scheb/2fa-totp`) used directly in the setup controller.
 - **Login success**: `LoginSuccessHandler` sets `_login_success` session flag, used by dashboard to show login overlay.
 - **Avatar uploads**: `public/uploads/avatars/`, max 2 MB, JPEG/PNG/WebP only. Old file removed on replace.
 
@@ -103,6 +103,12 @@ All `#[Route]` attribute except `/2fa` and `/2fa_check` which are YAML-defined i
 - `src/Command/{SeedKanjiCommand,CreateAdminCommand}.php`
 - `src/Data/KanjiData.php` — seeded kanji data (581 entries)
 - No tests directory exists.
+
+## Git
+
+- **Conventional commits**: `feat:`, `fix:`, `refactor:`, `chore:`, `docs:`. One line only, no body. If already committed without prefixes, do `git reset --soft HEAD~N` and recommit one by one.
+- **Always check `git status` + `git diff` before committing.** Never commit sensitive data (secrets, `.env`, `out.json`).
+- **Avoid rebasing in-progress work** — stuck rebase must be aborted with `git rebase --abort`, then recover lost commits from `git reflog` + `git reset --hard <hash>`.
 
 ## Skills
 
