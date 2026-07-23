@@ -38,12 +38,32 @@
   .bento--recent { grid-column: span 8; }
 }
 
+.bento--trophy {
+  grid-column: span 12;
+}
+
+@media (min-width: 768px) {
+  .bento--trophy { grid-column: span 4; }
+}
+
 .bento--ranking {
   grid-column: span 12;
 }
 
 @media (min-width: 768px) {
   .bento--ranking { grid-column: span 4; }
+}
+
+.trophy__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.trophy__count {
+  text-align: center;
+  padding: 12px 0;
 }
 
 .mastery__header {
@@ -89,7 +109,6 @@
   width: 128px;
   height: 128px;
   background: rgba(188, 0, 45, 0.12);
-  border-radius: 50%;
   filter: blur(48px);
   pointer-events: none;
   transform: translate(30%, -30%);
@@ -127,7 +146,6 @@
 .streak__day {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -206,7 +224,6 @@
 .ranking__avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -259,6 +276,7 @@
   align-items: center;
   justify-content: center;
   animation: login-overlay 1.1s ease-out forwards;
+  pointer-events: none;
 }
 
 .login-overlay__img {
