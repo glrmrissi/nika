@@ -6,6 +6,7 @@ use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -21,9 +22,9 @@ class ProfileFormType extends AbstractType
             ->add('name', TextType::class, [
                 'constraints' => [
                     new NotBlank(message: 'Name is required'),
-                    new Length(max: 100),
+                    new Length(max: 100, maxMessage: 'Name must be at most {{ limit }} characters'),
                 ],
-                'attr' => ['placeholder' => 'Your name'],
+                'attr' => ['placeholder' => 'Your name', 'maxlength' => 100],
             ])
             ->add('timezone', ChoiceType::class, [
                 'required' => false,
@@ -40,6 +41,14 @@ class ProfileFormType extends AbstractType
                     'Click kanji to search images' => 'auto',
                 ],
                 'label' => 'Kanji image search',
+            ])
+            ->add('readme', TextareaType::class, [
+                'required' => false,
+                'constraints' => [
+                    new Length(max: 5000, maxMessage: 'README must be at most {{ limit }} characters'),
+                ],
+                'attr' => ['rows' => 12, 'maxlength' => 5000, 'placeholder' => 'Write your profile README in Markdown...'],
+                'label' => 'Profile README',
             ])
             ->add('avatar', FileType::class, [
                 'mapped' => false,

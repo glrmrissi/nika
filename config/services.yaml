@@ -27,4 +27,7 @@ services:
         tags:
             - { name: 'security.authentication.success_handler', firewall: 'main' }
 
+    League\CommonMark\ConverterInterface:
+        class: League\CommonMark\CommonMarkConverter
+
 

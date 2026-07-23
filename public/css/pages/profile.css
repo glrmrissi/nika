@@ -77,6 +77,69 @@
   margin-bottom: 2px;
 }
 
+.profile__name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.profile__name-row .page-title {
+  margin-bottom: 0;
+}
+
+.profile__name-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--color-secondary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.profile__name-toggle:hover {
+  color: var(--color-primary);
+}
+
+.profile__name-history {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 220px;
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-elevated);
+  z-index: 50;
+}
+
+.profile__name-history--open {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile__name-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  font-size: 13px;
+}
+
+.profile__name-history-item:hover {
+  background: var(--color-surface-container);
+}
+
+.profile__name-history-value {
+  color: var(--color-on-surface);
+}
+
+.profile__name-history-date {
+  color: var(--color-secondary);
+  font-size: 12px;
+}
+
 .profile__badge-group {
   display: flex;
   gap: 8px;
@@ -126,7 +189,65 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  box-shadow: var(--shadow-card);
+}
+
+.profile__readme {
+  margin: 0 24px 32px;
+  padding: 20px 24px;
+  background: var(--color-surface-container-low);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-on-surface);
+}
+
+.profile__readme p { margin: 0 0 12px; }
+.profile__readme p:last-child { margin: 0; }
+.profile__readme ul, .profile__readme ol { margin: 0 0 12px; padding-left: 20px; }
+.profile__readme li { margin-bottom: 4px; }
+.profile__readme h1, .profile__readme h2, .profile__readme h3,
+.profile__readme h4, .profile__readme h5, .profile__readme h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--color-on-surface);
+  margin: 20px 0 8px;
+}
+.profile__readme h1 { font-size: 22px; }
+.profile__readme h2 { font-size: 18px; }
+.profile__readme h3 { font-size: 16px; }
+.profile__readme h1:first-child, .profile__readme h2:first-child,
+.profile__readme h3:first-child { margin-top: 0; }
+.profile__readme a { color: var(--color-primary); }
+.profile__readme code {
+  font-size: 13px;
+  background: var(--color-surface-container);
+  padding: 2px 6px;
+  color: var(--color-primary);
+}
+.profile__readme pre {
+  background: var(--color-surface-container);
+  padding: 16px;
+  overflow-x: auto;
+  margin: 0 0 12px;
+}
+.profile__readme pre code { background: none; padding: 0; }
+.profile__readme blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 12px;
+  margin: 0 0 12px;
+  color: var(--color-secondary);
+}
+.profile__readme hr {
+  border: none;
+  border-top: 1px solid var(--color-outline-variant);
+  margin: 16px 0;
+}
+.profile__readme img { max-width: 100%; }
+
+@media (max-width: 640px) {
+  .profile__readme {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
 }
 
 .stat-card__icon {
@@ -152,9 +273,28 @@
   margin: 0 24px 32px;
 }
 
+.profile__section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.profile__section-header .section-title {
+  margin-bottom: 0;
+}
+
+.profile__section--heatmap {
+  margin: 24px 24px 32px;
+  padding: 24px;
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-card);
+  width: fit-content;
+}
+
 @media (max-width: 640px) {
-  .profile__section {
-    margin: 0 16px 32px;
+  .profile__section--heatmap {
+    margin: 24px 16px 32px;
   }
 }
 
@@ -459,4 +599,30 @@ select.profile__input {
   height: 16px;
   margin: 0;
   flex-shrink: 0;
+}
+
+.profile__input--readme {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 200px;
+}
+
+.profile__hint {
+  font-size: 12px;
+  color: var(--color-secondary);
+  margin-top: 4px;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: var(--color-secondary);
+  margin-top: 4px;
+}
+
+.char-count--over {
+  color: var(--color-error);
 }

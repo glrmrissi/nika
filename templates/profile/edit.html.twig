@@ -55,7 +55,8 @@
 
       <div class="profile__field">
         {{ form_label(form.name, 'Name', {label_attr: {class: 'profile__label'}}) }}
-        {{ form_widget(form.name, {attr: {class: 'profile__input', placeholder: 'Your name'}}) }}
+        {{ form_widget(form.name, {attr: {class: 'profile__input', placeholder: 'Your name', 'data-maxlength': 100}}) }}
+        <span class="char-count" data-for="profile_form_name" data-max="100"></span>
         {{ form_errors(form.name) }}
       </div>
 
@@ -78,6 +79,14 @@
         {{ form_errors(form.kanjiClickAction) }}
       </div>
 
+      <div class="profile__field">
+        {{ form_label(form.readme, 'Profile README', {label_attr: {class: 'profile__label'}}) }}
+        {{ form_widget(form.readme, {attr: {class: 'profile__input profile__input--readme', rows: 12, placeholder: 'Write your profile README in Markdown...', 'data-maxlength': 5000}}) }}
+        <span class="char-count" data-for="profile_form_readme" data-max="5000"></span>
+        <p class="profile__hint">Supports Markdown formatting. This will be displayed on your profile.</p>
+        {{ form_errors(form.readme) }}
+      </div>
+
       <button type="submit" class="btn btn--primary btn--full">Save changes</button>
     {{ form_end(form) }}
   </div>
@@ -85,6 +94,23 @@
 
 {% block javascripts %}
   {{ parent() }}
+  <script>
+    (function() {
+      var counters = document.querySelectorAll('.char-count');
+      counters.forEach(function(el) {
+        var input = document.getElementById(el.dataset.for);
+        var max = parseInt(el.dataset.max, 10);
+        if (!input) return;
+        function update() {
+          var len = input.value.length;
+          el.textContent = len + ' / ' + max;
+          el.classList.toggle('char-count--over', len > max);
+        }
+        input.addEventListener('input', update);
+        update();
+      });
+    })();
+  </script>
   <script>
     (function() {
       var input = document.getElementById('profile_form_avatar');

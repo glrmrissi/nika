@@ -22,17 +22,18 @@ class RegistrationFormType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'attr' => ['placeholder' => 'Your name'],
+                'attr' => ['placeholder' => 'Your name', 'maxlength' => 100],
                 'constraints' => [
                     new NotBlank(message: 'Enter your name'),
-                    new Length(max: 100),
+                    new Length(max: 100, maxMessage: 'Name must be at most {{ limit }} characters'),
                 ],
             ])
             ->add('email', EmailType::class, [
-                'attr' => ['placeholder' => 'you@example.com'],
+                'attr' => ['placeholder' => 'you@example.com', 'maxlength' => 180],
                 'constraints' => [
                     new NotBlank(message: 'Enter your email'),
                     new Email(message: 'Invalid email'),
+                    new Length(max: 180, maxMessage: 'Email must be at most {{ limit }} characters'),
                 ],
             ])
             ->add('password', RepeatedType::class, [
