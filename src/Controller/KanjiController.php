@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Kanji;
+use App\Entity\UserKanji;
 use App\Repository\KanjiRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,8 +25,11 @@ class KanjiController extends AbstractController
     {
         $page = max(1, (int) $request->query->get('page', 1));
         $level = $request->query->get('level');
+        $status = $request->query->get('status');
         $limit = 50;
         $offset = ($page - 1) * $limit;
+
+        $user = $this->getUser();
 
         $qb = $kanjiRepo->createQueryBuilder('k');
 
@@ -31,13 +37,39 @@ class KanjiController extends AbstractController
             $qb->andWhere('k.jlptLevel = :level')->setParameter('level', $level);
         }
 
+        if ($status === 'studying' && $user) {
+            $qb->join('k.userKanjis', 'uk_status')
+                ->andWhere('uk_status.user = :userStatus')
+                ->andWhere('uk_status.isComplete = :notDone')
+                ->setParameter('userStatus', $user)
+                ->setParameter('notDone', false);
+        } elseif ($status === 'complete' && $user) {
+            $qb->join('k.userKanjis', 'uk_status')
+                ->andWhere('uk_status.user = :userStatus')
+                ->andWhere('uk_status.isComplete = :done')
+                ->setParameter('userStatus', $user)
+                ->setParameter('done', true);
+        }
+
         $total = (clone $qb)
             ->select('COUNT(k.id)')
             ->getQuery()
             ->getSingleScalarResult();
 
+        $qb
+            ->select('k.id', 'k.character', 'k.meanings', 'k.onyomi', 'k.kunyomi', 'k.jlptLevel', 'k.strokeCount');
+
+        if ($user) {
+            $qb->addSelect('uk.id as selected')
+                ->addSelect('uk.isComplete as done')
+                ->leftJoin('k.userKanjis', 'uk', 'WITH', 'uk.user = :currentUser')
+                ->setParameter('currentUser', $user);
+        } else {
+            $qb->addSelect('0 as selected')
+                ->addSelect('0 as done');
+        }
+
         $items = $qb
-            ->select('k.id', 'k.character', 'k.meanings', 'k.onyomi', 'k.kunyomi', 'k.jlptLevel', 'k.strokeCount')
             ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->orderBy('k.character', 'ASC')
@@ -58,5 +90,111 @@ class KanjiController extends AbstractController
         $response->headers->set('Vary', 'Accept-Encoding');
 
         return $response;
+    }
+
+    #[Route('/kanji/{id}/select', name: 'app_kanji_select', methods: ['POST'])]
+    public function select(Kanji $kanji, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $existing = $em->getRepository(UserKanji::class)->findOneBy([
+            'user' => $user,
+            'kanji' => $kanji,
+        ]);
+
+        if ($existing) {
+            $em->remove($existing);
+            $em->flush();
+            return $this->json(['selected' => false, 'done' => false]);
+        }
+
+        $userKanji = new UserKanji();
+        $userKanji->setUser($user);
+        $userKanji->setKanji($kanji);
+        $em->persist($userKanji);
+        $em->flush();
+
+        return $this->json(['selected' => true, 'done' => false]);
+    }
+
+    #[Route('/api/kanji/select-batch', name: 'app_kanji_select_batch', methods: ['POST'])]
+    public function selectBatch(Request $request, KanjiRepository $kanjiRepo, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $action = $data['action'] ?? 'select';
+        $ids = $data['ids'] ?? [];
+        $level = $data['level'] ?? null;
+
+        if ($level) {
+            $ids = $kanjiRepo->findIdsByLevel($level);
+        }
+
+        if (empty($ids)) {
+            return $this->json(['error' => 'No kanji specified'], 400);
+        }
+
+        $kanjiList = $em->getRepository(Kanji::class)->findBy(['id' => $ids]);
+        $count = 0;
+
+        foreach ($kanjiList as $kanji) {
+            $existing = $em->getRepository(UserKanji::class)->findOneBy([
+                'user' => $user,
+                'kanji' => $kanji,
+            ]);
+
+            if ($action === 'select') {
+                if (!$existing) {
+                    $userKanji = new UserKanji();
+                    $userKanji->setUser($user);
+                    $userKanji->setKanji($kanji);
+                    $em->persist($userKanji);
+                    $count++;
+                }
+            } else {
+                if ($existing) {
+                    $em->remove($existing);
+                    $count++;
+                }
+            }
+        }
+
+        $em->flush();
+
+        return $this->json([
+            'success' => true,
+            'action' => $action,
+            'count' => $count,
+        ]);
+    }
+
+    #[Route('/kanji/{id}/toggle-done', name: 'app_kanji_toggle_done', methods: ['POST'])]
+    public function toggleDone(Kanji $kanji, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $userKanji = $em->getRepository(UserKanji::class)->findOneBy([
+            'user' => $user,
+            'kanji' => $kanji,
+        ]);
+
+        if (!$userKanji) {
+            return $this->json(['error' => 'Kanji not selected'], 400);
+        }
+
+        $userKanji->setIsComplete(!$userKanji->isComplete());
+        $em->flush();
+
+        return $this->json(['done' => $userKanji->isComplete()]);
     }
 }
