@@ -28,18 +28,18 @@
       </div>
 
       <div class="review-actions">
-        <button id="show-answer-btn" class="btn btn--primary review-actions__show" onclick="showAnswer()">
+        <button id="show-answer-btn" class="btn btn--primary review-actions__show">
           Show Answer
         </button>
         <div id="quality-buttons" style="display:none;">
           <p class="review-actions__label">How well did you know it?</p>
-          <div class="review-actions__buttons">
-            <button class="btn btn--danger btn--sm" onclick="submitReview(0)">Forgot</button>
-            <button class="btn btn--danger btn--sm" onclick="submitReview(1)">Hard</button>
-            <button class="btn btn--medium btn--sm" onclick="submitReview(2)">Okay</button>
-            <button class="btn btn--success btn--sm" onclick="submitReview(3)">Good</button>
-            <button class="btn btn--success btn--sm" onclick="submitReview(4)">Easy</button>
-            <button class="btn btn--success btn--sm" onclick="submitReview(5)">Perfect</button>
+          <div class="review-actions__buttons" id="quality-buttons-group">
+            <button class="btn btn--danger btn--sm" data-quality="0">Forgot</button>
+            <button class="btn btn--danger btn--sm" data-quality="1">Hard</button>
+            <button class="btn btn--medium btn--sm" data-quality="2">Okay</button>
+            <button class="btn btn--success btn--sm" data-quality="3">Good</button>
+            <button class="btn btn--success btn--sm" data-quality="4">Easy</button>
+            <button class="btn btn--success btn--sm" data-quality="5">Perfect</button>
           </div>
           <p class="review-actions__hint">Press 1-6 to rate</p>
         </div>
@@ -49,7 +49,7 @@
     <p class="review-progress" id="review-progress"></p>
 
     {% if dueCount > 0 %}
-      <button class="btn btn--primary" onclick="startReview()" style="margin-top:16px;" id="start-btn">
+      <button class="btn btn--primary" style="margin-top:16px;" id="start-btn">
         Start Review ({{ dueCount }})
       </button>
     {% else %}
@@ -60,5 +60,11 @@
 
 {% block javascripts %}
 <script src="{{ asset('js/pages/review.js') }}"></script>
-<script>total = {{ dueCount }}; var csrfToken = '{{ csrf_token('api') }}';</script>
+<script nonce="{{ csp_nonce('script') }}">var total = {{ dueCount }}; var csrfToken = '{{ csrf_token('api') }}';
+document.getElementById('show-answer-btn').addEventListener('click', showAnswer);
+document.getElementById('quality-buttons-group').addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-quality]');
+  if (btn) submitReview(parseInt(btn.dataset.quality));
+});
+document.getElementById('start-btn').addEventListener('click', startReview);</script>
 {% endblock %}

@@ -19,7 +19,7 @@
         <div class="review-card__char" id="kanji-char"></div>
         <div class="review-input-area" id="input-area">
           <input type="text" class="review-input" id="reading-input" placeholder="Type the reading..." autocomplete="off" spellcheck="false">
-          <button class="btn btn--primary review-input__btn" id="check-btn" onclick="checkAnswer()">Check</button>
+          <button class="btn btn--primary review-input__btn" id="check-btn">Check</button>
         </div>
         <div class="review-result" id="result-area" style="display:none;">
           <p class="review-result__text" id="result-text"></p>
@@ -27,7 +27,7 @@
         </div>
       </div>
 
-      <button class="btn btn--primary review-next-btn" id="next-btn" style="display:none;" onclick="nextKanji()">
+      <button class="btn btn--primary review-next-btn" id="next-btn" style="display:none;">
         Next
       </button>
     </div>
@@ -35,7 +35,7 @@
     <p class="review-progress" id="review-progress"></p>
 
     {% if dueCount > 0 %}
-      <button class="btn btn--primary" onclick="startReview()" style="margin-top:16px;" id="start-btn">
+      <button class="btn btn--primary" style="margin-top:16px;" id="start-btn">
         Start Interactive Review ({{ dueCount }})
       </button>
     {% else %}
@@ -46,5 +46,8 @@
 
 {% block javascripts %}
 <script src="{{ asset('js/pages/review-interactive.js') }}"></script>
-<script>total = {{ dueCount }}; var csrfToken = '{{ csrf_token('api') }}';</script>
+<script nonce="{{ csp_nonce('script') }}">var total = {{ dueCount }}; var csrfToken = '{{ csrf_token('api') }}';
+document.getElementById('check-btn').addEventListener('click', checkAnswer);
+document.getElementById('next-btn').addEventListener('click', nextKanji);
+document.getElementById('start-btn').addEventListener('click', startReview);</script>
 {% endblock %}

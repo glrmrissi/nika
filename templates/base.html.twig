@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja" data-theme="dark">
 <head>
-  <script>!function(){var t=localStorage.getItem('theme');document.documentElement.setAttribute('data-theme',t||'dark')}();</script>
+  <script nonce="{{ csp_nonce('script') }}">!function(){var t=localStorage.getItem('theme');document.documentElement.setAttribute('data-theme',t||'dark')}();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}nika{% endblock %}</title>

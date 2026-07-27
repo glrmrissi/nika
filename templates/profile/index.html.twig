@@ -155,7 +155,7 @@
 
 {% block javascripts %}
   {{ parent() }}
-  <script>
+  <script nonce="{{ csp_nonce('script') }}">
     (function() {
       var toggle = document.getElementById('name-history-toggle');
       var history = document.getElementById('name-history');
@@ -172,7 +172,7 @@
     })();
   </script>
   {% if heatmap is not empty %}
-  <script>
+  <script nonce="{{ csp_nonce('script') }}">
     (function() {
       var data = {{ heatmap|json_encode|raw }};
       var grid = document.getElementById('profile-heatmap');

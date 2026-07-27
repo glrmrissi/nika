@@ -48,7 +48,7 @@
 {% endblock %}
 
 {% block javascripts %}
-<script>
+<script nonce="{{ csp_nonce('script') }}">
 var currentPage = 1;
 var totalPages = 1;
 
@@ -94,14 +94,14 @@ function renderRecent(data) {
   grid.innerHTML = html;
 
   var phtml = '';
-  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled' : '') + '>Prev</button>';
+  phtml += '<button class="pagination__btn" data-page="' + (currentPage - 1) + '" ' + (currentPage <= 1 ? 'disabled' : '') + '>Prev</button>';
   for (var i = 1; i <= Math.min(totalPages, 10); i++) {
-    phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+    phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" data-page="' + i + '">' + i + '</button>';
   }
   if (totalPages > 10) {
     phtml += '<span style="padding:6px 4px;color:var(--color-secondary);">...</span>';
   }
-  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled' : '') + '>Next</button>';
+  phtml += '<button class="pagination__btn" data-page="' + (currentPage + 1) + '" ' + (currentPage >= totalPages ? 'disabled' : '') + '>Next</button>';
   pagination.innerHTML = phtml;
 }
 
@@ -112,6 +112,15 @@ function goToPage(page) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-fetchRecent(1);
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('pagination').addEventListener('click', function (e) {
+    var btn = e.target.closest('.pagination__btn');
+    if (btn && !btn.disabled) {
+      goToPage(parseInt(btn.dataset.page));
+    }
+  });
+
+  fetchRecent(1);
+});
 </script>
 {% endblock %}
