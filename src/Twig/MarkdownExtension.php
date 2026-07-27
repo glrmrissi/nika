@@ -3,14 +3,43 @@
 namespace App\Twig;
 
 use League\CommonMark\ConverterInterface;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
 class MarkdownExtension extends AbstractExtension
 {
+    private readonly HtmlSanitizer $htmlSanitizer;
+
     public function __construct(
         private readonly ConverterInterface $markdownConverter,
-    ) {}
+    ) {
+        $this->htmlSanitizer = new HtmlSanitizer(
+            (new HtmlSanitizerConfig())
+                ->allowElement('a', ['href', 'title'])
+                ->allowElement('strong')
+                ->allowElement('em')
+                ->allowElement('p')
+                ->allowElement('br')
+                ->allowElement('ul')
+                ->allowElement('ol')
+                ->allowElement('li')
+                ->allowElement('h1')
+                ->allowElement('h2')
+                ->allowElement('h3')
+                ->allowElement('h4')
+                ->allowElement('h5')
+                ->allowElement('h6')
+                ->allowElement('blockquote')
+                ->allowElement('code')
+                ->allowElement('pre')
+                ->allowElement('hr')
+                ->allowLinkSchemes(['https', 'http', 'mailto'])
+                ->forceHttpsUrls()
+                ->forceAttribute('a', 'rel', 'noopener noreferrer')
+        );
+    }
 
     public function getFilters(): array
     {
@@ -23,6 +52,6 @@ class MarkdownExtension extends AbstractExtension
     {
         $html = $this->markdownConverter->convert($content)->getContent();
 
-        return preg_replace('/<img\b[^>]*>/i', '', $html);
+        return $this->htmlSanitizer->sanitize($html);
     }
 }
