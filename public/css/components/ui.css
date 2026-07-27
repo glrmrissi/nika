@@ -90,9 +90,11 @@
   border: 1px solid transparent;
 }
 
-.kanji-card:hover {
-  background: var(--color-surface-container);
-  border-color: rgba(228, 226, 228, 0.5);
+@media (hover: hover) and (pointer: fine) {
+  .kanji-card:hover {
+    background: var(--color-surface-container);
+    border-color: rgba(228, 226, 228, 0.5);
+  }
 }
 
 .kanji-card__char {
@@ -130,7 +132,7 @@
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast), box-shadow var(--transition-fast);
   cursor: pointer;
   border: none;
 }
@@ -143,7 +145,7 @@
   color: var(--color-on-primary);
 }
 
-.btn--primary:hover { opacity: 0.9; }
+@media (hover: hover) and (pointer: fine) { .btn--primary:hover { opacity: 0.9; } }
 
 .btn--secondary {
   background: var(--color-surface-container);
@@ -151,28 +153,28 @@
   border: 1px solid var(--color-outline-variant);
 }
 
-.btn--secondary:hover { background: var(--color-surface-container-high); }
+@media (hover: hover) and (pointer: fine) { .btn--secondary:hover { background: var(--color-surface-container-high); } }
 
 .btn--success {
   background: #34c759;
   color: #fff;
 }
 
-.btn--success:hover { background: #2db74e; }
+@media (hover: hover) and (pointer: fine) { .btn--success:hover { background: #2db74e; } }
 
 .btn--danger {
   background: var(--color-error);
   color: #fff;
 }
 
-.btn--danger:hover { background: #a00; }
+@media (hover: hover) and (pointer: fine) { .btn--danger:hover { background: #a00; } }
 
 .btn--medium {
   background: #ff9f0a;
   color: #fff;
 }
 
-.btn--medium:hover { background: #ef8f00; }
+@media (hover: hover) and (pointer: fine) { .btn--medium:hover { background: #ef8f00; } }
 
 .btn--sm {
   padding: 6px 14px;

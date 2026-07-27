@@ -66,8 +66,10 @@
   font-size: 28px;
 }
 
-.profile__avatar-wrap:hover .profile__avatar-overlay {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .profile__avatar-wrap:hover .profile__avatar-overlay {
+    opacity: 1;
+  }
 }
 
 .profile__header-info {
@@ -108,8 +110,10 @@
   flex-shrink: 0;
 }
 
-.profile__name-toggle:hover {
-  color: var(--color-primary);
+@media (hover: hover) and (pointer: fine) {
+  .profile__name-toggle:hover {
+    color: var(--color-primary);
+  }
 }
 
 .profile__name-history {
@@ -128,6 +132,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: name-history-in 0.15s var(--ease-out) forwards;
+}
+
+@keyframes name-history-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .profile__name-history-item {
@@ -140,8 +150,10 @@
   min-width: 0;
 }
 
-.profile__name-history-item:hover {
-  background: var(--color-surface-container);
+@media (hover: hover) and (pointer: fine) {
+  .profile__name-history-item:hover {
+    background: var(--color-surface-container);
+  }
 }
 
 .profile__name-history-value {
@@ -462,9 +474,11 @@
   overflow: hidden;
 }
 
-.profile__back:hover {
-  background: var(--color-surface-container);
-  color: var(--color-on-surface);
+@media (hover: hover) and (pointer: fine) {
+  .profile__back:hover {
+    background: var(--color-surface-container);
+    color: var(--color-on-surface);
+  }
 }
 
 .profile__edit .page-title {
@@ -490,10 +504,12 @@
   overflow: hidden;
 }
 
-.profile__dropzone:hover,
-.profile__dropzone--dragover {
-  border-color: var(--color-primary);
-  background: var(--color-primary-subtle);
+@media (hover: hover) and (pointer: fine) {
+  .profile__dropzone:hover,
+  .profile__dropzone--dragover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-subtle);
+  }
 }
 
 .profile__dropzone-icon {
@@ -583,8 +599,10 @@
   font-size: 32px;
 }
 
-.profile__upload-preview-wrap:hover .profile__upload-overlay {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .profile__upload-preview-wrap:hover .profile__upload-overlay {
+    opacity: 1;
+  }
 }
 
 .profile__upload-remove {
@@ -608,8 +626,10 @@
   overflow: hidden;
 }
 
-.profile__upload-remove:hover {
-  transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+  .profile__upload-remove:hover {
+    opacity: 0.85;
+  }
 }
 
 .profile__form {
@@ -702,8 +722,10 @@ select.profile__input {
   overflow: hidden;
 }
 
-.profile__radio:hover {
-  background: var(--color-surface-container-high);
+@media (hover: hover) and (pointer: fine) {
+  .profile__radio:hover {
+    background: var(--color-surface-container-high);
+  }
 }
 
 .profile__radio input[type="radio"] {

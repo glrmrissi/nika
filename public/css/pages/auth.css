@@ -126,8 +126,10 @@ body.app-main--full .app-content {
   display: flex;
 }
 
-.password-toggle:hover {
-  color: var(--color-on-surface-variant);
+@media (hover: hover) and (pointer: fine) {
+  .password-toggle:hover {
+    color: var(--color-on-surface-variant);
+  }
 }
 
 .password-strength {
@@ -185,7 +187,7 @@ body.app-main--full .app-content {
   flex-shrink: 0;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--color-outline-variant);
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
 .password-rules li.rule--valid {
@@ -271,8 +273,10 @@ body.app-main--full .app-content {
   font-weight: 600;
 }
 
-.auth-links a:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .auth-links a:hover {
+    text-decoration: underline;
+  }
 }
 
 .auth-flash {

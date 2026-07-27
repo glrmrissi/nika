@@ -149,8 +149,10 @@
   transition: background var(--transition-fast);
 }
 
-.rcard:hover {
-  background: var(--color-surface-container-high);
+@media (hover: hover) and (pointer: fine) {
+  .rcard:hover {
+    background: var(--color-surface-container-high);
+  }
 }
 
 .rcard__char {
