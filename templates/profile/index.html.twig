@@ -138,6 +138,11 @@
           <i class="bi bi-shield-lock"></i>
           {% if app.user.totpEnabled %}
             2FA Active
+            <form method="post" action="{{ path('app_2fa_disable') }}" class="inline-form">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token('disable-2fa') }}">
+              <input type="password" name="password" placeholder="Password to confirm" required class="input input--sm">
+              <button type="submit" class="btn btn--danger btn--xs" data-modal data-modal-title="Disable 2FA" data-modal-message="Enter your password to disable two-factor authentication." data-modal-confirm="Disable" data-modal-cancel="Keep">Disable</button>
+            </form>
           {% else %}
             <a href="{{ path('app_2fa_setup') }}">Set up 2FA</a>
           {% endif %}

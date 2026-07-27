@@ -4,6 +4,7 @@
   opacity: 0.15;
   border-radius: var(--radius-lg);
   margin-bottom: -60px;
+  overflow: hidden;
 }
 
 .profile__header {
@@ -13,6 +14,7 @@
   gap: 24px;
   padding: 0 24px 24px;
   flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .profile__avatar-wrap {
@@ -71,10 +73,15 @@
 .profile__header-info {
   flex: 1;
   padding-bottom: 4px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .profile__header-info .page-title {
   margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile__name-row {
@@ -82,6 +89,7 @@
   align-items: center;
   gap: 8px;
   position: relative;
+  min-width: 0;
 }
 
 .profile__name-row .page-title {
@@ -97,6 +105,7 @@
   color: var(--color-secondary);
   font-size: 14px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .profile__name-toggle:hover {
@@ -112,11 +121,13 @@
   background: var(--color-surface-container-lowest);
   box-shadow: var(--shadow-elevated);
   z-index: 50;
+  overflow: hidden;
 }
 
 .profile__name-history--open {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .profile__name-history-item {
@@ -125,6 +136,8 @@
   justify-content: space-between;
   padding: 6px 16px;
   font-size: 13px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .profile__name-history-item:hover {
@@ -133,11 +146,19 @@
 
 .profile__name-history-value {
   color: var(--color-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
 }
 
 .profile__name-history-date {
   color: var(--color-secondary);
   font-size: 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-left: 8px;
 }
 
 .profile__badge-group {
@@ -146,12 +167,14 @@
   align-items: center;
   margin-top: 8px;
   flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .profile__header-actions {
   display: flex;
   gap: 8px;
   padding-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .profile__stats {
@@ -159,6 +182,7 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin: 24px 24px 32px;
+  overflow: hidden;
 }
 
 @media (max-width: 640px) {
@@ -189,6 +213,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow: hidden;
 }
 
 .profile__readme {
@@ -198,50 +223,59 @@
   font-size: 14px;
   line-height: 1.7;
   color: var(--color-on-surface);
+  overflow: hidden;
+  min-width: 0;
 }
 
-.profile__readme p { margin: 0 0 12px; }
+.profile__readme p { margin: 0 0 12px; overflow: hidden; }
 .profile__readme p:last-child { margin: 0; }
-.profile__readme ul, .profile__readme ol { margin: 0 0 12px; padding-left: 20px; }
-.profile__readme li { margin-bottom: 4px; }
+.profile__readme ul, .profile__readme ol { margin: 0 0 12px; padding-left: 20px; overflow: hidden; }
+.profile__readme li { margin-bottom: 4px; overflow: hidden; }
 .profile__readme h1, .profile__readme h2, .profile__readme h3,
 .profile__readme h4, .profile__readme h5, .profile__readme h6 {
   font-family: var(--font-heading);
   font-weight: 600;
   color: var(--color-on-surface);
   margin: 20px 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .profile__readme h1 { font-size: 22px; }
 .profile__readme h2 { font-size: 18px; }
 .profile__readme h3 { font-size: 16px; }
 .profile__readme h1:first-child, .profile__readme h2:first-child,
 .profile__readme h3:first-child { margin-top: 0; }
-.profile__readme a { color: var(--color-primary); }
+.profile__readme a { color: var(--color-primary); overflow: hidden; text-overflow: ellipsis; }
 .profile__readme code {
   font-size: 13px;
   background: var(--color-surface-container);
   padding: 2px 6px;
   color: var(--color-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .profile__readme pre {
   background: var(--color-surface-container);
   padding: 16px;
   overflow-x: auto;
   margin: 0 0 12px;
+  min-width: 0;
 }
-.profile__readme pre code { background: none; padding: 0; }
+.profile__readme pre code { background: none; padding: 0; overflow: hidden; text-overflow: ellipsis; }
 .profile__readme blockquote {
   border-left: 3px solid var(--color-primary);
   padding-left: 12px;
   margin: 0 0 12px;
   color: var(--color-secondary);
+  overflow: hidden;
 }
 .profile__readme hr {
   border: none;
   border-top: 1px solid var(--color-outline-variant);
   margin: 16px 0;
+  overflow: hidden;
 }
-.profile__readme img { max-width: 100%; }
+.profile__readme img { max-width: 100%; overflow: hidden; }
 
 @media (max-width: 640px) {
   .profile__readme {
@@ -253,6 +287,7 @@
 .stat-card__icon {
   font-size: 20px;
   color: var(--color-primary);
+  overflow: hidden;
 }
 
 .stat-card__value {
@@ -261,16 +296,24 @@
   font-weight: 700;
   color: var(--color-on-surface);
   line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .stat-card__label {
   font-size: 13px;
   font-weight: 500;
   color: var(--color-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .profile__section {
   margin: 0 24px 32px;
+  overflow: hidden;
 }
 
 .profile__section-header {
@@ -278,6 +321,9 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .profile__section-header .section-title {
@@ -289,12 +335,14 @@
   padding: 24px;
   background: var(--color-surface-container-lowest);
   box-shadow: var(--shadow-card);
-  width: fit-content;
+  overflow: hidden;
+  min-width: 0;
 }
 
 @media (max-width: 640px) {
   .profile__section--heatmap {
     margin: 24px 16px 32px;
+    padding: 16px;
   }
 }
 
@@ -303,28 +351,41 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-card {
   background: var(--color-surface-container-low);
   box-shadow: var(--shadow-card);
   padding: 24px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .account-card__email {
   margin-bottom: 20px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .account-card__email-address {
   font-size: 18px;
   font-weight: 500;
   color: var(--color-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
 }
 
 .account-card__meta {
   display: flex;
   flex-wrap: wrap;
   gap: 16px 24px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .account-card__meta-item {
@@ -333,15 +394,39 @@
   gap: 6px;
   font-size: 14px;
   color: var(--color-secondary);
+  min-width: 0;
 }
 
 .account-card__meta-item .bi {
   font-size: 16px;
   color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .account-card__meta-item a {
   color: var(--color-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-card__meta-item .inline-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.account-card__meta-item .inline-form .input--sm {
+  width: 120px;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.account-card__meta-item .inline-form .btn--xs {
+  padding: 2px 8px;
+  font-size: 11px;
 }
 
 /* --- Edit page --- */
@@ -350,6 +435,7 @@
   max-width: 520px;
   margin: 0 auto;
   padding-top: 24px;
+  overflow: hidden;
 }
 
 .profile__edit-header {
@@ -357,6 +443,8 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 32px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .profile__back {
@@ -371,6 +459,7 @@
   text-decoration: none;
   transition: background var(--transition-fast);
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .profile__back:hover {
@@ -380,6 +469,10 @@
 
 .profile__edit .page-title {
   margin-bottom: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .profile__dropzone {
@@ -394,6 +487,7 @@
   cursor: pointer;
   transition: border-color var(--transition-fast), background var(--transition-fast);
   text-align: center;
+  overflow: hidden;
 }
 
 .profile__dropzone:hover,
@@ -412,17 +506,24 @@
   justify-content: center;
   font-size: 22px;
   color: var(--color-secondary);
+  overflow: hidden;
 }
 
 .profile__dropzone-text {
   font-size: 14px;
   font-weight: 500;
   color: var(--color-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile__dropzone-hint {
   font-size: 13px;
   color: var(--color-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile__upload-area {
@@ -431,12 +532,14 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  overflow: hidden;
 }
 
 .profile__upload-preview-wrap {
   position: relative;
   width: 140px;
   height: 140px;
+  overflow: hidden;
 }
 
 .profile__upload-preview {
@@ -472,6 +575,7 @@
   opacity: 0;
   transition: opacity var(--transition-fast);
   cursor: pointer;
+  overflow: hidden;
 }
 
 .profile__upload-overlay i {
@@ -501,6 +605,7 @@
   transition: transform var(--transition-fast);
   z-index: 2;
   text-decoration: none;
+  overflow: hidden;
 }
 
 .profile__upload-remove:hover {
@@ -511,18 +616,23 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  overflow: hidden;
 }
 
 .profile__field {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow: hidden;
 }
 
 .profile__label {
   font-size: 14px;
   font-weight: 500;
   color: var(--color-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile__input {
@@ -535,6 +645,7 @@
   font-family: var(--font-body);
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
   transition: box-shadow var(--transition-fast);
+  overflow: hidden;
 }
 
 .profile__input:focus {
@@ -575,6 +686,7 @@ select.profile__input {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow: hidden;
 }
 
 .profile__radio {
@@ -587,6 +699,7 @@ select.profile__input {
   cursor: pointer;
   transition: background var(--transition-fast);
   font-size: 14px;
+  overflow: hidden;
 }
 
 .profile__radio:hover {
@@ -613,6 +726,9 @@ select.profile__input {
   font-size: 12px;
   color: var(--color-secondary);
   margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .char-count {
@@ -621,8 +737,14 @@ select.profile__input {
   font-size: 12px;
   color: var(--color-secondary);
   margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .char-count--over {
   color: var(--color-error);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

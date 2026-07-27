@@ -26,9 +26,9 @@ class ProfileController extends AbstractController
         $tz = $user->getEffectiveTimezone();
 
         $reviewedToday = $reviewLogRepo->countReviewsToday($tz);
-        $streak = $reviewLogRepo->countStreakDays($tz);
+        $streak = $reviewLogRepo->countStreakDays($user, $tz);
         $totalKanji = $kanjiRepo->count([]);
-        $dueCount = count($kanjiRepo->findDueReviews($user, $tz));
+        $dueCount = $kanjiRepo->countDueReviews($user, $tz);
         $thisWeek = $reviewLogRepo->countThisWeek($user, $tz);
         $thisMonth = $reviewLogRepo->countThisMonth($user, $tz);
         $thisYear = $reviewLogRepo->countThisYear($user, $tz);
@@ -68,7 +68,7 @@ class ProfileController extends AbstractController
                 $filename = sprintf('%s-%s.%s',
                     $user->getId(),
                     bin2hex(random_bytes(8)),
-                    $file->guessExtension()
+                    $file->guessExtension() ?: 'jpg'
                 );
                 $file->move(
                     $this->getParameter('kernel.project_dir') . '/public/' . self::AVATAR_DIR,
@@ -87,8 +87,14 @@ class ProfileController extends AbstractController
     }
 
     #[Route('/profile/avatar/remove', name: 'app_profile_avatar_remove', methods: ['POST'])]
-    public function removeAvatar(EntityManagerInterface $em): Response
+    public function removeAvatar(Request $request, EntityManagerInterface $em): Response
     {
+        $csrfToken = $request->request->get('_csrf_token');
+        if (!$csrfToken || !$this->isCsrfTokenValid('remove-avatar', (string) $csrfToken)) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('app_profile_edit');
+        }
+
         $user = $this->getUser();
         $this->removeOldAvatar($user);
         $user->setAvatarPath(null);
