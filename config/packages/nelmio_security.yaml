@@ -1,0 +1,30 @@
+nelmio_security:
+    clickjacking:
+        paths:
+            '^/.*': SAMEORIGIN
+
+    content_type:
+        nosniff: true
+
+    referrer_policy:
+        enabled: true
+        policies:
+            - 'strict-origin-when-cross-origin'
+
+    xss_protection:
+        enabled: true
+        mode_block: true
+
+    csp:
+        enabled: true
+        enforce:
+            default-src: ["'self'"]
+            script-src: ["'self'"]
+            style-src: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdn.jsdelivr.net"]
+            font-src: ["'self'", "fonts.gstatic.com", "cdn.jsdelivr.net"]
+            img-src: ["'self'", "data:"]
+            connect-src: ["'self'"]
+            frame-src: []
+            object-src: []
+            base-uri: ["'self'"]
+            form-action: ["'self'"]
