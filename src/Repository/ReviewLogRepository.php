@@ -34,7 +34,7 @@ class ReviewLogRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function countStreakDays(string $timezone = 'UTC'): int
+    public function countStreakDays(?User $user = null, string $timezone = 'UTC'): int
     {
         $conn = $this->getEntityManager()->getConnection();
         $table = $this->getClassMetadata()->getTableName();
@@ -42,10 +42,17 @@ class ReviewLogRepository extends ServiceEntityRepository
 
         $sql = "SELECT DISTINCT DATE({$col}) as day
                 FROM {$table}
-                ORDER BY day DESC
-                LIMIT 365";
+                WHERE DATE({$col}) >= DATE('now', '-60 days')";
 
-        $result = $conn->executeQuery($sql)->fetchFirstColumn();
+        $params = [];
+        if ($user) {
+            $sql .= " AND reviewUser_id = :userId";
+            $params['userId'] = $user->getId();
+        }
+
+        $sql .= " ORDER BY day DESC LIMIT 60";
+
+        $result = $conn->executeQuery($sql, $params)->fetchFirstColumn();
 
         if (empty($result)) {
             return 0;
@@ -53,11 +60,13 @@ class ReviewLogRepository extends ServiceEntityRepository
 
         $streak = 0;
         $tz = new \DateTimeZone($timezone);
-        $today = new \DateTime('today', $tz);
+        $today = new \DateTime('now', $tz);
+        $today->setTime(0, 0, 0);
+        $todayUtc = (clone $today)->setTimezone(new \DateTimeZone('UTC'));
 
         foreach ($result as $day) {
-            $date = new \DateTime($day);
-            $diff = (int) $today->diff($date)->format('%r%a');
+            $date = new \DateTime($day . ' 00:00:00', new \DateTimeZone('UTC'));
+            $diff = (int) $todayUtc->diff($date)->format('%r%a');
 
             if ($diff === $streak) {
                 $streak++;
@@ -169,13 +178,13 @@ class ReviewLogRepository extends ServiceEntityRepository
         return $result;
     }
 
-    public function findRecentWithKanji(int $limit = 4, ?User $user = null): array
+    public function findRecentWithKanji(int $limit = 4, ?User $user = null, int $offset = 0): array
     {
         $qb = $this->createQueryBuilder('r')
             ->join('r.kanji', 'k')
-            ->select('k.character', 'k.meanings', 'r.reviewedAt')
+            ->select('k.id', 'k.character', 'k.meanings', 'r.reviewedAt')
             ->orderBy('r.reviewedAt', 'DESC')
-            ->setMaxResults($limit * 2);
+            ->setMaxResults(($offset + $limit) * 3);
 
         if ($user) {
             $qb->andWhere('r.reviewUser = :user')
@@ -186,6 +195,9 @@ class ReviewLogRepository extends ServiceEntityRepository
 
         $seen = [];
         $result = [];
+        $kanjiIds = [];
+        $skipped = 0;
+
         foreach ($rows as $row) {
             $char = $row['character'];
             if (isset($seen[$char])) {
@@ -193,39 +205,81 @@ class ReviewLogRepository extends ServiceEntityRepository
             }
             $seen[$char] = true;
 
+            if ($skipped < $offset) {
+                $skipped++;
+                continue;
+            }
+
+            $result[] = $row;
+            $kanjiIds[] = $row['id'];
+
             if (count($result) >= $limit) {
                 break;
             }
+        }
 
-            $meanings = explode(',', $row['meanings']);
+        if ($user && !empty($kanjiIds)) {
+            $em = $this->getEntityManager();
+            $userKanjiEntities = $em->createQueryBuilder()
+                ->select('uk')
+                ->from(UserKanji::class, 'uk')
+                ->andWhere('uk.user = :user')
+                ->andWhere('uk.kanji IN (:kanjiIds)')
+                ->setParameter('user', $user)
+                ->setParameter('kanjiIds', $kanjiIds)
+                ->getQuery()
+                ->getResult();
 
-            $kanjiEntity = $this->getEntityManager()
-                ->getRepository(\App\Entity\Kanji::class)
-                ->findOneBy(['character' => $char]);
+            $ukMap = [];
+            foreach ($userKanjiEntities as $uk) {
+                $ukMap[$uk->getKanji()->getId()] = $uk;
+            }
 
-            $mastery = 0;
-            if ($user && $kanjiEntity) {
-                $uk = $this->getEntityManager()
-                    ->getRepository(UserKanji::class)
-                    ->findOneBy(['user' => $user, 'kanji' => $kanjiEntity]);
-
-                if ($uk) {
-                    $mastery = $this->calculateMastery(
+            foreach ($result as &$row) {
+                $row['mastery'] = 0;
+                if (isset($ukMap[$row['id']])) {
+                    $uk = $ukMap[$row['id']];
+                    $row['mastery'] = $this->calculateMastery(
                         $uk->getRepetitions(),
                         $uk->getInterval(),
                         $uk->getEaseFactor(),
                     );
                 }
+                $meanings = explode(',', $row['meanings']);
+                $row['meaning'] = trim($meanings[0] ?? '');
+                unset($row['id'], $row['meanings'], $row['reviewedAt']);
             }
-
-            $result[] = [
-                'character' => $char,
-                'meaning' => trim($meanings[0] ?? ''),
-                'mastery' => $mastery,
-            ];
+            unset($row);
+        } else {
+            foreach ($result as &$row) {
+                $row['mastery'] = 0;
+                $meanings = explode(',', $row['meanings']);
+                $row['meaning'] = trim($meanings[0] ?? '');
+                unset($row['id'], $row['meanings'], $row['reviewedAt']);
+            }
+            unset($row);
         }
 
         return $result;
+    }
+
+    public function countRecentUniqueKanji(?User $user = null): int
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $table = $this->getClassMetadata()->getTableName();
+        $col = $this->getClassMetadata()->getColumnName('reviewedAt');
+
+        $sql = "SELECT COUNT(DISTINCT k.character) as cnt
+                FROM {$table} r
+                JOIN kanji k ON r.kanji_id = k.id";
+
+        $params = [];
+        if ($user) {
+            $sql .= " WHERE r.reviewUser_id = :userId";
+            $params['userId'] = $user->getId();
+        }
+
+        return (int) $conn->executeQuery($sql, $params)->fetchOne();
     }
 
     private function calculateMastery(int $repetitions, int $interval, float $easeFactor): int

@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recently Studied | nika{% endblock %}
+
+{% block stylesheets %}
+<style>
+.recent-page { max-width: 800px; margin: 0 auto; }
+.recent-page__header { margin-bottom: 24px; }
+.recent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 640px) { .recent-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1024px) { .recent-grid { grid-template-columns: repeat(5, 1fr); } }
+.rcard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-surface-container);
+  padding: 14px 8px 10px;
+  transition: background var(--transition-fast);
+}
+.rcard:hover { background: var(--color-surface-container-high); }
+.rcard__char { font-size: 30px; line-height: 1.2; font-weight: 300; color: var(--color-on-surface); }
+.rcard__meaning { font-size: 11px; color: var(--color-secondary); text-align: center; line-height: 1.3; }
+.rcard__bar { width: 100%; height: 3px; background: var(--color-surface-variant); margin-top: 4px; overflow: hidden; }
+.rcard__bar-fill { height: 100%; background: var(--color-primary); transition: width 0.3s; }
+.recent-page__loading { text-align: center; padding: 40px; color: var(--color-secondary); }
+.pagination { display: flex; justify-content: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+.pagination__btn { padding: 6px 14px; border-radius: var(--radius-md); border: 1px solid var(--color-outline-variant); font-size: 13px; font-weight: 500; background: var(--color-surface-container-lowest); cursor: pointer; transition: all var(--transition-fast); color: var(--color-on-surface); }
+.pagination__btn:hover { border-color: var(--color-primary); }
+.pagination__btn--active { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+.pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="recent-page">
+  <div class="recent-page__header">
+    <h2 class="page-title">Recently Studied</h2>
+    <p class="page-subtitle">Kanji you've reviewed, ordered by most recent.</p>
+  </div>
+
+  <div id="recent-grid" class="recent-grid">
+    <div class="recent-page__loading">Loading...</div>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+var currentPage = 1;
+var totalPages = 1;
+
+function escapeHtml(str) {
+  if (!str) return '';
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+function fetchRecent(page) {
+  var grid = document.getElementById('recent-grid');
+  grid.innerHTML = '<div class="recent-page__loading">Loading...</div>';
+
+  fetch('/api/kanji/recent?page=' + page)
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      renderRecent(data);
+    });
+}
+
+function renderRecent(data) {
+  var grid = document.getElementById('recent-grid');
+  var pagination = document.getElementById('pagination');
+
+  currentPage = data.page;
+  totalPages = data.pages;
+
+  if (!data.data || data.data.length === 0) {
+    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--color-secondary);padding:40px;">No kanji studied yet.</p>';
+    pagination.innerHTML = '';
+    return;
+  }
+
+  var html = '';
+  data.data.forEach(function (item) {
+    html += '<div class="rcard">';
+    html += '<span class="rcard__char">' + escapeHtml(item.character) + '</span>';
+    html += '<span class="rcard__meaning">' + escapeHtml(item.meaning || '') + '</span>';
+    html += '<div class="rcard__bar"><div class="rcard__bar-fill" style="width:' + (item.mastery || 0) + '%"></div></div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+
+  var phtml = '';
+  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled' : '') + '>Prev</button>';
+  for (var i = 1; i <= Math.min(totalPages, 10); i++) {
+    phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+  }
+  if (totalPages > 10) {
+    phtml += '<span style="padding:6px 4px;color:var(--color-secondary);">...</span>';
+  }
+  phtml += '<button class="pagination__btn" onclick="goToPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled' : '') + '>Next</button>';
+  pagination.innerHTML = phtml;
+}
+
+function goToPage(page) {
+  if (page < 1 || page > totalPages) return;
+  currentPage = page;
+  fetchRecent(page);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+fetchRecent(1);
+</script>
+{% endblock %}
