@@ -124,4 +124,23 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!themeIcon) return;
     themeIcon.className = t === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
   }
+
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.getElementById('sidebar');
+  var sidebarOverlay = document.getElementById('sidebar-overlay');
+  var sidebarClose = document.getElementById('sidebar-close');
+
+  function openSidebar() {
+    if (sidebar) sidebar.classList.add('sidebar--open');
+    if (sidebarOverlay) sidebarOverlay.classList.add('sidebar-overlay--open');
+  }
+
+  function closeSidebar() {
+    if (sidebar) sidebar.classList.remove('sidebar--open');
+    if (sidebarOverlay) sidebarOverlay.classList.remove('sidebar-overlay--open');
+  }
+
+  if (sidebarToggle) sidebarToggle.addEventListener('click', openSidebar);
+  if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
+  if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
 });

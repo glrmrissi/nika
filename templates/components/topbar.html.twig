@@ -1,11 +1,15 @@
 <header class="topbar">
   <div class="topbar__start">
+    <button class="topbar__hamburger" id="sidebar-toggle" aria-label="Menu">
+      <i class="bi bi-list"></i>
+    </button>
     <div class="topbar__brand">
       <h2>nika</h2>
     </div>
     <nav class="topbar__nav">
       <a href="{{ path('app_home') }}" class="topbar__nav-link {% if app.current_route == 'app_home' %}topbar__nav-link--active{% endif %}">Dashboard</a>
       <a href="{{ path('app_review') }}" class="topbar__nav-link {% if app.current_route == 'app_review' %}topbar__nav-link--active{% endif %}">Review</a>
+      <a href="{{ path('app_review_interactive') }}" class="topbar__nav-link {% if app.current_route == 'app_review_interactive' %}topbar__nav-link--active{% endif %}">Interactive</a>
       <a href="{{ path('app_kanji_list') }}" class="topbar__nav-link {% if app.current_route == 'app_kanji_list' %}topbar__nav-link--active{% endif %}">Kanji</a>
     </nav>
   </div>
@@ -17,6 +21,16 @@
     <button class="topbar__icon-btn" id="theme-toggle" title="Toggle theme">
       <i class="bi bi-sun" id="theme-toggle-icon"></i>
     </button>
+
+    {% if app.user %}
+      {% set _streak = app_streak() %}
+      <div class="topbar__icon-btn topbar__streak" data-tooltip="{{ _streak }} day streak">
+        <i class="bi bi-fire"></i>
+        {% if _streak > 0 %}
+          <span class="topbar__streak-count">{{ _streak }}</span>
+        {% endif %}
+      </div>
+    {% endif %}
 
     {% if app.user %}
       <div class="topbar__user-menu">

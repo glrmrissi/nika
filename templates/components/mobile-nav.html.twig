@@ -1,29 +1,44 @@
-<nav class="mobile-nav">
-  <a href="{{ path('app_home') }}" class="mobile-nav__link {% if app.current_route == 'app_home' %}mobile-nav__link--active{% endif %}">
-    <i class="bi bi-grid-1x2"></i>
-    <span>Dashboard</span>
-  </a>
-  <a href="{{ path('app_review') }}" class="mobile-nav__link {% if app.current_route == 'app_review' %}mobile-nav__link--active{% endif %}">
-    <i class="bi bi-eye"></i>
-    <span>Review</span>
-  </a>
-  <a href="{{ path('app_kanji_list') }}" class="mobile-nav__link {% if app.current_route == 'app_kanji_list' %}mobile-nav__link--active{% endif %}">
-    <i class="bi bi-book"></i>
-    <span>Kanji</span>
-  </a>
-  {% if app.user %}
-    <a href="{{ path('app_profile') }}" class="mobile-nav__link">
-      <i class="bi bi-person"></i>
-      <span>Profile</span>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar__header">
+    <h2 class="sidebar__brand">nika</h2>
+    <button class="sidebar__close" id="sidebar-close" aria-label="Close menu">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+  <nav class="sidebar__nav">
+    <a href="{{ path('app_home') }}" class="sidebar__link {% if app.current_route == 'app_home' %}sidebar__link--active{% endif %}">
+      <i class="bi bi-grid-1x2"></i>
+      <span>Dashboard</span>
     </a>
-    <a href="{{ path('app_logout') }}" class="mobile-nav__link">
-      <i class="bi bi-box-arrow-right"></i>
-      <span>Sign Out</span>
+    <a href="{{ path('app_review') }}" class="sidebar__link {% if app.current_route == 'app_review' %}sidebar__link--active{% endif %}">
+      <i class="bi bi-eye"></i>
+      <span>Review</span>
     </a>
-  {% else %}
-    <a href="{{ path('app_login') }}" class="mobile-nav__link">
-      <i class="bi bi-box-arrow-in-right"></i>
-      <span>Sign In</span>
+    <a href="{{ path('app_review_interactive') }}" class="sidebar__link {% if app.current_route == 'app_review_interactive' %}sidebar__link--active{% endif %}">
+      <i class="bi bi-keyboard"></i>
+      <span>Interactive</span>
     </a>
-  {% endif %}
-</nav>
+    <a href="{{ path('app_kanji_list') }}" class="sidebar__link {% if app.current_route == 'app_kanji_list' %}sidebar__link--active{% endif %}">
+      <i class="bi bi-book"></i>
+      <span>Kanji</span>
+    </a>
+    {% if app.user %}
+      <hr class="sidebar__divider">
+      <a href="{{ path('app_profile') }}" class="sidebar__link">
+        <i class="bi bi-person"></i>
+        <span>Profile</span>
+      </a>
+      <a href="{{ path('app_logout') }}" class="sidebar__link">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Sign Out</span>
+      </a>
+    {% else %}
+      <hr class="sidebar__divider">
+      <a href="{{ path('app_login') }}" class="sidebar__link">
+        <i class="bi bi-box-arrow-in-right"></i>
+        <span>Sign In</span>
+      </a>
+    {% endif %}
+  </nav>
+</aside>
