@@ -33,6 +33,14 @@ class SeedKanjiCommand extends Command
         $seen = [];
         $skip = false;
 
+        $existingChars = array_flip(
+            $this->em->getRepository(Kanji::class)
+                ->createQueryBuilder('k')
+                ->select('k.character')
+                ->getQuery()
+                ->getSingleColumnResult()
+        );
+
         foreach ($allData as $entry) {
             if (is_string($entry)) {
                 $skip = true;
@@ -53,8 +61,7 @@ class SeedKanjiCommand extends Command
             }
             $seen[$char] = true;
 
-            $existing = $this->em->getRepository(Kanji::class)->findOneBy(['character' => $char]);
-            if ($existing) {
+            if (isset($existingChars[$char])) {
                 $output->writeln("  <comment>Já existe: {$char}</comment>");
                 continue;
             }
@@ -69,6 +76,11 @@ class SeedKanjiCommand extends Command
 
             $this->em->persist($kanji);
             $count++;
+
+            if ($count % 100 === 0) {
+                $this->em->flush();
+                $this->em->clear();
+            }
         }
 
         $this->em->flush();
