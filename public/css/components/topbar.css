@@ -6,13 +6,12 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid color-mix(in srgb, var(--color-outline) 30%, transparent);
-  z-index: 50;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-gutter);
   width: 100%;
-  overflow: hidden;
 }
 
 [data-theme="dark"] .topbar {
@@ -169,7 +168,7 @@
   border: 1px solid var(--color-outline-variant);
   box-shadow: var(--shadow-elevated);
   overflow: hidden;
-  z-index: 100;
+  z-index: 9999 !important;
 }
 
 .topbar__dropdown--open {
