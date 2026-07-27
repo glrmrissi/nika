@@ -10,92 +10,116 @@
 {% block body %}
   <div class="profile__edit">
     <div class="profile__edit-header">
-      <a href="{{ path('app_profile') }}" class="profile__back"><i class="bi bi-arrow-left"></i></a>
-      <h2 class="page-title">Edit Profile</h2>
+      <a href="{{ path('app_profile') }}" class="profile__back">
+        <i class="bi bi-arrow-left"></i>
+        Edit Profile
+      </a>
     </div>
 
-    <div class="profile__upload-area" id="upload-area">
-      <div class="profile__upload-preview-wrap">
-        <div class="profile__upload-preview" id="avatar-preview">
-          {% if app.user.avatarPath %}
-            <img src="{{ asset(app.user.avatarPath) }}" alt="Avatar">
-          {% else %}
-            {{ app.user.name|first|upper }}
-          {% endif %}
-        </div>
-        <label for="profile_form_avatar" class="profile__upload-overlay">
-          <i class="bi bi-camera"></i>
+    {% if app.user.avatarPath %}
+      <form method="post" action="{{ path('app_profile_avatar_remove') }}" id="remove-avatar-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('remove-avatar') }}">
+      </form>
+    {% endif %}
+
+    {{ form_start(form, {attr: {novalidate: true, class: 'profile__form'}}) }}
+
+      <div class="profile__upload-area" id="upload-area">
+        <label for="profile_form_avatar" class="profile__upload-preview-wrap">
+          <div class="profile__upload-preview" id="avatar-preview">
+            {% if app.user.avatarPath %}
+              <img src="{{ asset(app.user.avatarPath) }}" alt="Avatar">
+            {% else %}
+              {{ app.user.name|first|upper }}
+            {% endif %}
+          </div>
+          <div class="profile__upload-overlay">
+            <i class="bi bi-camera"></i>
+          </div>
         </label>
-        {% if app.user.avatarPath %}
-          <form method="post" action="{{ path('app_profile_avatar_remove') }}" id="remove-avatar-form">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('remove-avatar') }}">
+        {{ form_widget(form.avatar, {attr: {class: 'profile__file-input'}}) }}
+        {{ form_errors(form.avatar) }}
+        <div class="profile__upload-info">
+          <span class="profile__upload-text">Click to upload</span>
+          <span class="profile__upload-hint">JPEG, PNG or WebP &bull; Max 2MB</span>
+          {% if app.user.avatarPath %}
             <button type="button"
               class="profile__upload-remove"
-              title="Remove photo"
               data-modal
               data-modal-title="Remove Avatar"
               data-modal-message="Remove your profile photo?"
               data-modal-confirm="Remove"
               data-modal-cancel="Cancel">
-              <i class="bi bi-trash"></i>
+              Remove photo
             </button>
-          </form>
-        {% endif %}
-      </div>
-    </div>
-
-    {{ form_start(form, {attr: {novalidate: true, class: 'profile__form'}}) }}
-      {{ form_widget(form.avatar, {attr: {class: 'profile__file-input', 'data-action': 'change->preview'}}) }}
-      {{ form_errors(form.avatar) }}
-
-      <div class="profile__dropzone" id="dropzone">
-        <div class="profile__dropzone-icon"><i class="bi bi-cloud-arrow-up"></i></div>
-        <div class="profile__dropzone-text">Drag a photo here or click to choose</div>
-        <div class="profile__dropzone-hint">JPEG, PNG or WebP • Max 2MB</div>
-      </div>
-
-      <div class="profile__field">
-        {{ form_label(form.name, 'Name', {label_attr: {class: 'profile__label'}}) }}
-        {{ form_widget(form.name, {attr: {class: 'profile__input', placeholder: 'Your name', 'data-maxlength': 100}}) }}
-        <span class="char-count" data-for="profile_form_name" data-max="100"></span>
-        {{ form_errors(form.name) }}
-      </div>
-
-      <div class="profile__field">
-        {{ form_label(form.timezone, 'Timezone', {label_attr: {class: 'profile__label'}}) }}
-        {{ form_widget(form.timezone, {attr: {class: 'profile__input'}}) }}
-        {{ form_errors(form.timezone) }}
-      </div>
-
-      <div class="profile__field">
-        {{ form_label(form.kanjiClickAction, 'Kanji Image Search', {label_attr: {class: 'profile__label'}}) }}
-        <div class="profile__radio-group">
-          {% for child in form.kanjiClickAction %}
-            <label class="profile__radio">
-              {{ form_widget(child) }}
-              <span>{{ child.vars.label }}</span>
-            </label>
-          {% endfor %}
+          {% endif %}
         </div>
-        {{ form_errors(form.kanjiClickAction) }}
       </div>
 
-      <div class="profile__field">
-        {{ form_label(form.readme, 'Profile README', {label_attr: {class: 'profile__label'}}) }}
-        {{ form_widget(form.readme, {attr: {class: 'profile__input profile__input--readme', rows: 12, placeholder: 'Write your profile README in Markdown...', 'data-maxlength': 5000}}) }}
-        <span class="char-count" data-for="profile_form_readme" data-max="5000"></span>
-        <p class="profile__hint">Supports Markdown formatting. This will be displayed on your profile.</p>
-        {{ form_errors(form.readme) }}
+      <div class="profile__dropzone-overlay" id="dropzone-overlay">
+        <div class="profile__dropzone-overlay-inner">
+          <i class="bi bi-cloud-arrow-up"></i>
+          <span>Drop your photo here</span>
+        </div>
       </div>
 
-      <button type="submit" class="btn btn--primary btn--full">Save changes</button>
+      <div class="profile__section">
+        <h3 class="profile__section-title">Personal Info</h3>
+
+        <div class="profile__field">
+          {{ form_label(form.name, 'Name', {label_attr: {class: 'profile__label'}}) }}
+          {{ form_widget(form.name, {attr: {class: 'profile__input', placeholder: 'Your name', 'data-maxlength': 100}}) }}
+          <span class="char-count" data-for="profile_form_name" data-max="100"></span>
+          {{ form_errors(form.name) }}
+        </div>
+
+        <div class="profile__field">
+          {{ form_label(form.timezone, 'Timezone', {label_attr: {class: 'profile__label'}}) }}
+          {{ form_widget(form.timezone, {attr: {class: 'profile__input'}}) }}
+          {{ form_errors(form.timezone) }}
+        </div>
+      </div>
+
+      <div class="profile__section">
+        <h3 class="profile__section-title">Kanji Settings</h3>
+
+        <div class="profile__field">
+          {{ form_label(form.kanjiClickAction, 'Kanji Image Search', {label_attr: {class: 'profile__label'}}) }}
+          <div class="profile__radio-group">
+            {% for child in form.kanjiClickAction %}
+              <label class="profile__radio">
+                {{ form_widget(child) }}
+                <span>{{ child.vars.label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          {{ form_errors(form.kanjiClickAction) }}
+        </div>
+      </div>
+
+      <div class="profile__section">
+        <h3 class="profile__section-title">Profile README</h3>
+
+        <div class="profile__field">
+          {{ form_widget(form.readme, {attr: {class: 'profile__input profile__input--readme', rows: 12, placeholder: 'Write your profile README in Markdown...', 'data-maxlength': 5000}}) }}
+          <span class="char-count" data-for="profile_form_readme" data-max="5000"></span>
+          <p class="profile__hint">Supports Markdown formatting.</p>
+          {{ form_errors(form.readme) }}
+        </div>
+      </div>
+
+      <div class="profile__actions">
+        <a href="{{ path('app_profile') }}" class="btn btn--secondary">Cancel</a>
+        <button type="submit" class="btn btn--primary">Save changes</button>
+      </div>
+
     {{ form_end(form) }}
   </div>
 {% endblock %}
 
 {% block javascripts %}
   {{ parent() }}
-  <script>
+  <script nonce="{{ csp_nonce('script') }}">
     (function() {
       var counters = document.querySelectorAll('.char-count');
       counters.forEach(function(el) {
@@ -110,22 +134,19 @@
         input.addEventListener('input', update);
         update();
       });
-    })();
-  </script>
-  <script>
-    (function() {
+
       var input = document.getElementById('profile_form_avatar');
       var preview = document.getElementById('avatar-preview');
-      var dropzone = document.getElementById('dropzone');
+      var overlay = document.getElementById('dropzone-overlay');
+      var dragCounter = 0;
 
       function updatePreview(file) {
         if (!file) return;
         var reader = new FileReader();
         reader.onload = function(ev) {
           preview.innerHTML = '<img src="' + ev.target.result + '" alt="Preview">';
-          dropzone.querySelector('.profile__dropzone-text').textContent = file.name;
-          dropzone.querySelector('.profile__dropzone-icon i').className = 'bi bi-check-circle-fill';
-          dropzone.classList.add('profile__dropzone--has-file');
+          var text = document.querySelector('.profile__upload-text');
+          if (text) text.textContent = file.name;
         };
         reader.readAsDataURL(file);
       }
@@ -134,30 +155,35 @@
         updatePreview(this.files[0]);
       });
 
-      ['dragenter', 'dragover'].forEach(function(e) {
-        dropzone.addEventListener(e, function(ev) {
-          ev.preventDefault();
-          dropzone.classList.add('profile__dropzone--dragover');
-        });
+      document.addEventListener('dragenter', function(ev) {
+        ev.preventDefault();
+        dragCounter++;
+        if (dragCounter === 1) {
+          overlay.classList.add('profile__dropzone-overlay--visible');
+        }
       });
 
-      ['dragleave', 'drop'].forEach(function(e) {
-        dropzone.addEventListener(e, function(ev) {
-          ev.preventDefault();
-          dropzone.classList.remove('profile__dropzone--dragover');
-        });
+      document.addEventListener('dragleave', function(ev) {
+        ev.preventDefault();
+        dragCounter--;
+        if (dragCounter === 0) {
+          overlay.classList.remove('profile__dropzone-overlay--visible');
+        }
       });
 
-      dropzone.addEventListener('drop', function(ev) {
+      document.addEventListener('dragover', function(ev) {
+        ev.preventDefault();
+      });
+
+      document.addEventListener('drop', function(ev) {
+        ev.preventDefault();
+        dragCounter = 0;
+        overlay.classList.remove('profile__dropzone-overlay--visible');
         var file = ev.dataTransfer.files[0];
         if (file) {
           input.files = ev.dataTransfer.files;
           updatePreview(file);
         }
-      });
-
-      dropzone.addEventListener('click', function() {
-        input.click();
       });
     })();
   </script>
