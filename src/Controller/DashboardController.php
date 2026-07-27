@@ -19,19 +19,17 @@ class DashboardController extends AbstractController
         $tz = $user?->getEffectiveTimezone() ?? 'UTC';
 
         if ($user instanceof User) {
-            $due = $kanjiRepo->findDueReviews($user, $tz);
             $total = $kanjiRepo->countSelected($user);
-            $dueCount = count($due);
+            $dueCount = $kanjiRepo->countDueReviews($user, $tz);
             $byLevel = $kanjiRepo->countByLevel($user);
         } else {
-            $due = [];
             $total = 0;
             $dueCount = 0;
             $byLevel = [];
         }
 
         $reviewedToday = $reviewLogRepo->countReviewsToday($tz);
-        $streak = $reviewLogRepo->countStreakDays($tz);
+        $streak = $reviewLogRepo->countStreakDays($user, $tz);
 
         if ($user instanceof User) {
             $thisWeek = $reviewLogRepo->countThisWeek($user, $tz);
@@ -49,7 +47,7 @@ class DashboardController extends AbstractController
         }
         unset($level);
 
-        $recent = $reviewLogRepo->findRecentWithKanji(4, $user instanceof User ? $user : null);
+        $recent = $reviewLogRepo->findRecentWithKanji(20, $user instanceof User ? $user : null);
 
         $completedCount = $user instanceof User ? $kanjiRepo->countCompleted($user) : 0;
         $recentCompleted = $user instanceof User ? $kanjiRepo->findCompleted($user, 6) : [];

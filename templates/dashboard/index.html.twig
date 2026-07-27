@@ -38,10 +38,10 @@
             <div class="mastery__row">
               <div class="mastery__row-header">
                 <span>Kanji {{ level.jlptLevel }}</span>
-                <span>{{ level.total }} kanji</span>
+                <span class="mastery__row-meta">{{ level.total }} kanji &middot; {{ level.percentage }}%</span>
               </div>
               <div class="pbar">
-                <div class="pbar__fill" style="width: {{ level.percentage }}%; opacity: {{ 0.4 + (level.percentage / 100) * 0.6 }};"></div>
+                <div class="pbar__fill" style="width: {{ level.percentage }}%;"></div>
               </div>
             </div>
           {% endfor %}
@@ -49,45 +49,15 @@
       </div>
     </article>
 
-    <article class="d-card d-card--streak">
-      <div class="streak__content">
-        <i class="bi bi-fire streak__icon"></i>
-        <h3 class="streak__count">{{ streak }}</h3>
-        <p class="streak__label">Day Streak</p>
-        <div class="streak__days">
-          <div class="streak__day {% if streak > 2 %}streak__day--past{% else %}streak__day--future{% endif %}">{{ streakDays[0] }}</div>
-          <div class="streak__day {% if streak > 1 %}streak__day--past{% else %}streak__day--future{% endif %}">{{ streakDays[1] }}</div>
-          <div class="streak__day streak__day--today">{{ streakDays[2] }}</div>
-          <div class="streak__day streak__day--future">{{ streakDays[3] }}</div>
-          <div class="streak__day streak__day--future">{{ streakDays[4] }}</div>
-        </div>
-      </div>
-    </article>
-
-    <article class="d-card d-card--recent">
-      <div class="d-card__header">
-        <h3 class="section-title" style="margin-bottom:2px;">Recently Studied</h3>
-        <a href="#" style="font-size:13px;color:var(--color-primary);font-weight:500;text-decoration:none;">View All</a>
-      </div>
-      <div class="recent__grid">
-        {% for item in recent %}
-          <div class="rcard">
-            <span class="rcard__char">{{ item.character }}</span>
-            <span class="rcard__meaning">{{ item.meaning }}</span>
-            <div class="rcard__bar"><div class="rcard__bar-fill" style="width:{{ item.mastery }}%"></div></div>
-          </div>
-        {% else %}
-          <p style="grid-column:1/-1;color:var(--color-secondary);font-size:14px;text-align:center;padding:24px 0;">No kanji studied yet.</p>
-        {% endfor %}
-      </div>
-    </article>
-
     <article class="d-card d-card--reviews">
       <div class="d-card__header" style="margin-bottom:20px;">
         <h3 class="section-title" style="margin-bottom:2px;">Reviews</h3>
-        <i class="bi bi-arrow-repeat" style="color:var(--color-secondary);font-size:18px;"></i>
       </div>
       <div class="rstats">
+        <div class="rstats__item">
+          <span class="rstats__value">{{ reviewedToday }}</span>
+          <span class="rstats__label">Today</span>
+        </div>
         <div class="rstats__item">
           <span class="rstats__value">{{ thisWeek }}</span>
           <span class="rstats__label">This Week</span>
@@ -100,10 +70,6 @@
           <span class="rstats__value">{{ thisYear }}</span>
           <span class="rstats__label">This Year</span>
         </div>
-        <div class="rstats__item">
-          <span class="rstats__value">{{ reviewedToday }}</span>
-          <span class="rstats__label">Today</span>
-        </div>
       </div>
       <div class="rstats__due">
         <span class="rstats__due-value">{{ dueCount }}</span>
@@ -112,6 +78,24 @@
       <a href="{{ path('app_review') }}" class="btn btn--primary" style="display:flex;width:100%;padding:12px;font-size:15px;">
         <i class="bi bi-eye"></i> Review Now
       </a>
+    </article>
+
+    <article class="d-card d-card--recent">
+      <div class="d-card__header">
+        <h3 class="section-title" style="margin-bottom:2px;">Recently Studied</h3>
+        <a href="{{ path('app_kanji_recent') }}" style="font-size:13px;color:var(--color-primary);font-weight:500;text-decoration:none;">View All</a>
+      </div>
+      <div class="recent__grid">
+        {% for item in recent %}
+          <div class="rcard">
+            <span class="rcard__char">{{ item.character }}</span>
+            <span class="rcard__meaning">{{ item.meaning }}</span>
+            <div class="rcard__bar"><div class="rcard__bar-fill" style="width:{{ item.mastery }}%"></div></div>
+          </div>
+        {% else %}
+          <p style="grid-column:1/-1;color:var(--color-secondary);font-size:14px;text-align:center;padding:24px 0;">No kanji studied yet.</p>
+        {% endfor %}
+      </div>
     </article>
 
   </div>

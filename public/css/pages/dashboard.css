@@ -21,35 +21,27 @@
 }
 
 .d-card--mastery {
-  grid-column: span 12;
+  grid-column: span 1;
 }
 
 @media (min-width: 768px) {
-  .d-card--mastery { grid-column: span 8; }
-}
-
-.d-card--streak {
-  grid-column: span 12;
-}
-
-@media (min-width: 768px) {
-  .d-card--streak { grid-column: span 4; }
-}
-
-.d-card--recent {
-  grid-column: span 12;
-}
-
-@media (min-width: 768px) {
-  .d-card--recent { grid-column: span 8; }
+  .d-card--mastery { grid-column: span 7; }
 }
 
 .d-card--reviews {
-  grid-column: span 12;
+  grid-column: span 1;
 }
 
 @media (min-width: 768px) {
-  .d-card--reviews { grid-column: span 4; }
+  .d-card--reviews { grid-column: span 5; }
+}
+
+.d-card--recent {
+  grid-column: span 1;
+}
+
+@media (min-width: 768px) {
+  .d-card--recent { grid-column: span 12; }
 }
 
 .d-card__header {
@@ -57,12 +49,17 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 24px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .d-card__subtitle {
   font-size: 15px;
   color: var(--color-secondary);
   margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .d-badge {
@@ -73,6 +70,8 @@
   font-weight: 500;
   color: var(--color-primary);
   background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Mastery */
@@ -95,11 +94,21 @@
   align-items: center;
   font-size: 14px;
   color: var(--color-on-surface);
+  gap: 8px;
+  min-width: 0;
+}
+
+.mastery__row-meta {
+  font-size: 13px;
+  color: var(--color-secondary);
+  font-weight: 500;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .pbar {
   width: 100%;
-  height: 8px;
+  height: 6px;
   background: var(--color-surface-container);
   overflow: hidden;
 }
@@ -110,77 +119,12 @@
   transition: width 0.3s;
 }
 
-/* Streak */
-
-.streak__content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 200px;
-}
-
-.streak__icon {
-  font-size: 40px;
-  color: var(--color-primary);
-  margin-bottom: 8px;
-}
-
-.streak__count {
-  font-family: var(--font-heading);
-  font-size: 48px;
-  font-weight: 700;
-  line-height: 56px;
-  letter-spacing: -0.02em;
-  color: var(--color-on-surface);
-}
-
-.streak__label {
-  font-family: var(--font-heading);
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-  color: var(--color-secondary);
-  margin-bottom: 16px;
-}
-
-.streak__days {
-  display: flex;
-  gap: 8px;
-}
-
-.streak__day {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.streak__day--past {
-  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-  color: var(--color-primary);
-}
-
-.streak__day--today {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.streak__day--future {
-  background: var(--color-surface-container);
-  color: var(--color-secondary);
-}
-
 /* Recently Studied */
 
 .recent__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 10px;
 }
 
 @media (min-width: 640px) {
@@ -189,29 +133,42 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .recent__grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
 .rcard {
-  aspect-ratio: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 4px;
   background: var(--color-surface-container);
-  padding: 16px;
+  padding: 14px 8px 10px;
+  transition: background var(--transition-fast);
+}
+
+.rcard:hover {
+  background: var(--color-surface-container-high);
 }
 
 .rcard__char {
-  font-size: 36px;
+  font-size: 30px;
   line-height: 1.2;
   font-weight: 300;
   color: var(--color-on-surface);
 }
 
 .rcard__meaning {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-secondary);
   text-align: center;
   line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .rcard__bar {
@@ -250,12 +207,17 @@
   font-weight: 700;
   color: var(--color-on-surface);
   line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rstats__label {
   font-size: 11px;
   color: var(--color-secondary);
   margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rstats__due {
@@ -272,6 +234,8 @@
   font-weight: 700;
   color: var(--color-primary);
   line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rstats__due-label {
@@ -324,4 +288,3 @@
   0% { opacity: 0; transform: scale(0.5) rotate(-6deg); }
   100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
-
