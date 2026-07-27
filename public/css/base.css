@@ -78,6 +78,7 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 body {
@@ -88,6 +89,7 @@ body {
   background: var(--color-background);
   color: var(--color-on-surface);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 img { display: block; max-width: 100%; }

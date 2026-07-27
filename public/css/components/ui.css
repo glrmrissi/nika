@@ -107,6 +107,9 @@
   font-weight: 500;
   line-height: 18px;
   color: var(--color-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .kanji-card__progress {
@@ -183,6 +186,8 @@
   line-height: 40px;
   letter-spacing: -0.01em;
   color: var(--color-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .page-subtitle {
@@ -190,6 +195,9 @@
   line-height: 26px;
   color: var(--color-secondary);
   margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .section-title {
@@ -198,6 +206,8 @@
   font-weight: 600;
   line-height: 28px;
   color: var(--color-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .modal-overlay {
@@ -250,17 +260,24 @@
 .heatmap__grid {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
 }
 
 .heatmap__svg {
   display: block;
+  width: 100%;
   height: auto;
   overflow: visible;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .heatmap__svg .hm-month {
   font-size: 10px;
   fill: var(--color-secondary);
+  overflow: hidden;
 }
 
 .heatmap__svg .hm-day {
@@ -268,6 +285,7 @@
   fill: var(--color-secondary);
   text-anchor: end;
   dominant-baseline: central;
+  overflow: hidden;
 }
 
 .heatmap__legend {
@@ -276,16 +294,23 @@
   gap: 4px;
   font-size: 11px;
   color: var(--color-secondary);
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .heatmap__legend-label {
   font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .heatmap__legend .hm-swatch {
   display: inline-block;
   width: 10px;
   height: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 rect[data-level="0"] { fill: var(--color-surface-container); }

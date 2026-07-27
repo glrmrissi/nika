@@ -37,12 +37,12 @@
 }
 
 [data-theme="dark"] .topbar {
-  background: rgba(18, 18, 20, 0.88);
+  background: color-mix(in srgb, var(--color-background) 88%, transparent);
   box-shadow: 0 1px 0 var(--color-outline-variant);
 }
 
 [data-theme="dark"] .mobile-nav {
-  background: rgba(18, 18, 20, 0.94);
+  background: color-mix(in srgb, var(--color-background) 94%, transparent);
   box-shadow: 0 -1px 0 var(--color-outline-variant);
 }
 
