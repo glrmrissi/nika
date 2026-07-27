@@ -3,7 +3,41 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        cookie_secure: true
+        cookie_httponly: true
+        cookie_samesite: lax
+        name: _nika_session
+
+    assets:
+        version: '%env(ASSET_VERSION)%'
+        version_format: '%%s?v=%%s'
+
+    rate_limiter:
+        login:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '1 minute'
+        registration:
+            policy: 'sliding_window'
+            limit: 3
+            interval: '1 hour'
+        password_reset:
+            policy: 'sliding_window'
+            limit: 3
+            interval: '1 hour'
+        two_factor:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '1 minute'
+        review_submit:
+            policy: 'sliding_window'
+            limit: 60
+            interval: '1 minute'
+        select_batch:
+            policy: 'sliding_window'
+            limit: 10
+            interval: '1 minute'
 
     #esi: true
     #fragments: true

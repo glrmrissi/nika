@@ -10,17 +10,29 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 
 class ResetPasswordController extends AbstractController
 {
     #[Route('/forgot-password', name: 'app_forgot_password')]
-    public function forgotPassword(Request $request, EntityManagerInterface $em): Response
-    {
+    public function forgotPassword(
+        Request $request,
+        EntityManagerInterface $em,
+        RateLimiterFactory $passwordResetLimiter,
+    ): Response {
         $form = $this->createForm(ForgotPasswordFormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $rateLimiter = $passwordResetLimiter->create($request->getClientIp());
+            $limit = $rateLimiter->consume(1);
+
+            if (!$limit->isAccepted()) {
+                $this->addFlash('error', 'Too many password reset attempts. Please try again later.');
+                return $this->redirectToRoute('app_forgot_password');
+            }
+
             $email = $form->get('email')->getData();
             $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
 
@@ -60,6 +72,10 @@ class ResetPasswordController extends AbstractController
             $user->setResetToken(null);
             $user->setResetTokenExpiresAt(null);
             $em->flush();
+
+            $this->container->get('security.token_storage')->setToken(null);
+            $request->getSession()->invalidate();
+            $request->getSession()->migrate(true);
 
             $this->addFlash('success', 'Password changed! Log in.');
             return $this->redirectToRoute('app_login');

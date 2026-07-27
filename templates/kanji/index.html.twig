@@ -141,6 +141,14 @@ var currentStatus = '';
 var totalPages = 1;
 var isAuthenticated = {{ app.user ? 'true' : 'false' }};
 var kanjiClickAction = '{{ kanjiClickAction }}';
+var csrfToken = '{{ csrf_token('api') }}';
+
+function escapeHtml(str) {
+  if (!str) return '';
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
 
 function imageSearchUrl(char) {
   return 'https://jisho.org/search/' + encodeURIComponent(char);
@@ -237,18 +245,18 @@ function renderKanji(data) {
     var done = k.done ? ' kanji-grid__item--done' : '';
     var selDot = k.selected ? ' kanji-grid__select--on' : '';
     var trophy = k.done ? '<span class="kanji-grid__trophy"><img src="{{ asset('assets/anime-happy.png') }}" alt="done"></span>' : '';
-    var char = k.character.replace(/'/g, "\\'");
-    var kun = (k.kunyomi || '').replace(/'/g, "\\'");
-    var mng = meaning.replace(/'/g, "\\'");
-    var lvl = (k.jlptLevel || '').replace(/'/g, "\\'");
-    var detailClick = 'showDetail(' + k.id + ',\'' + char + '\',\'' + onyomi.replace(/'/g, "\\'") + '\',\'' + kun + '\',\'' + mng + '\',\'' + lvl + '\',' + (k.selected ? 1 : 0) + ',' + (k.done ? 1 : 0) + ')';
+    var char = escapeHtml(k.character);
+    var kun = escapeHtml(k.kunyomi || '');
+    var mng = escapeHtml(meaning);
+    var lvl = escapeHtml(k.jlptLevel || '');
+    var detailClick = 'showDetail(' + k.id + ',\'' + char + '\',\'' + escapeHtml(onyomi) + '\',\'' + kun + '\',\'' + mng + '\',\'' + lvl + '\',' + (k.selected ? 1 : 0) + ',' + (k.done ? 1 : 0) + ')';
 
     var searchIcons = '<a href="' + imageSearchUrl(k.character) + '" target="_blank" rel="noopener" class="kanji-grid__search-btn" onclick="event.stopPropagation()" title="Open in Jisho"><i class="bi bi-box-arrow-up-right"></i></a>';
 
     html += '<div class="kanji-grid__item' + selected + done + '" data-id="' + k.id + '" onclick="' + (kanjiClickAction === 'auto' ? 'window.open(\'' + imageSearchUrl(k.character) + '\',\'_blank\');event.stopPropagation()' : detailClick) + '">';
-    html += '<div class="kanji-grid__char" onclick="' + (kanjiClickAction === 'auto' ? 'window.open(\'' + imageSearchUrl(k.character) + '\',\'_blank\');event.stopPropagation()' : 'event.stopPropagation()') + '">' + k.character + '</div>';
-    html += '<div class="kanji-grid__reading" onclick="' + (kanjiClickAction === 'auto' ? detailClick + ';event.stopPropagation()' : '') + '">' + onyomi + '</div>';
-    html += '<div class="kanji-grid__meaning" onclick="' + (kanjiClickAction === 'auto' ? detailClick + ';event.stopPropagation()' : '') + '">' + meaning + '</div>';
+    html += '<div class="kanji-grid__char" onclick="' + (kanjiClickAction === 'auto' ? 'window.open(\'' + imageSearchUrl(k.character) + '\',\'_blank\');event.stopPropagation()' : 'event.stopPropagation()') + '">' + char + '</div>';
+    html += '<div class="kanji-grid__reading" onclick="' + (kanjiClickAction === 'auto' ? detailClick + ';event.stopPropagation()' : '') + '">' + escapeHtml(onyomi) + '</div>';
+    html += '<div class="kanji-grid__meaning" onclick="' + (kanjiClickAction === 'auto' ? detailClick + ';event.stopPropagation()' : '') + '">' + mng + '</div>';
     html += trophy;
     html += searchIcons;
     html += '<span class="kanji-grid__select' + selDot + '" onclick="event.stopPropagation();toggleSelect(' + k.id + ', this)" data-selected="' + (k.selected ? '1' : '0') + '">' + (k.selected ? '\u2713' : '') + '</span>';
@@ -326,7 +334,10 @@ function modalToggleSelect() {
 
 function modalToggleDone() {
   if (!_modalData || !_modalData.selected) return;
-  fetch('/kanji/' + _modalData.id + '/toggle-done', { method: 'POST' })
+  fetch('/kanji/' + _modalData.id + '/toggle-done', {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': csrfToken }
+  })
     .then(function (r) { return r.json(); })
     .then(function (data) {
       _modalData.done = data.done;
@@ -347,7 +358,10 @@ function modalToggleDone() {
 }
 
 function toggleSelect(kanjiId, el, cb) {
-  fetch('/kanji/' + kanjiId + '/select', { method: 'POST' })
+  fetch('/kanji/' + kanjiId + '/select', {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': csrfToken }
+  })
     .then(function (r) { return r.json(); })
     .then(function (data) {
       if (el) {
@@ -392,7 +406,7 @@ function batchSelect(action) {
 
   fetch('/api/kanji/select-batch', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
     body: JSON.stringify(body)
   })
     .then(function (r) { return r.json(); })

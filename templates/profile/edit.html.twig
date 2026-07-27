@@ -28,6 +28,7 @@
         </label>
         {% if app.user.avatarPath %}
           <form method="post" action="{{ path('app_profile_avatar_remove') }}" id="remove-avatar-form">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('remove-avatar') }}">
             <button type="button"
               class="profile__upload-remove"
               title="Remove photo"

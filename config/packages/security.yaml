@@ -33,17 +33,21 @@ security:
                 check_path: /2fa_check
 
     access_control:
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/register$, roles: PUBLIC_ACCESS }
+        - { path: ^/forgot-password$, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
-        - { path: ^/verify-email, roles: PUBLIC_ACCESS }
+        - { path: ^/verify-email$, roles: PUBLIC_ACCESS }
         - { path: ^/2fa$, roles: PUBLIC_ACCESS }
-        - { path: ^/2fa_check, roles: PUBLIC_ACCESS }
-        - { path: ^/api/kanji/select-batch, roles: PUBLIC_ACCESS }
-        - { path: ^/api/kanji, roles: PUBLIC_ACCESS }
-        - { path: ^/kanji/\d+/toggle-done, roles: PUBLIC_ACCESS }
-        - { path: ^/kanji, roles: PUBLIC_ACCESS }
+        - { path: ^/2fa_check$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/kanji/select-batch$, roles: ROLE_USER }
+        - { path: ^/api/kanji$, roles: PUBLIC_ACCESS }
+        - { path: ^/kanji/\d+/select$, roles: ROLE_USER }
+        - { path: ^/kanji/\d+/toggle-done$, roles: ROLE_USER }
+        - { path: ^/kanji$, roles: PUBLIC_ACCESS }
+        - { path: ^/profile$, roles: PUBLIC_ACCESS }
+        - { path: ^/profile/edit$, roles: ROLE_USER }
+        - { path: ^/profile/avatar/remove$, roles: ROLE_USER }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:

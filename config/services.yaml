@@ -30,4 +30,9 @@ services:
     League\CommonMark\ConverterInterface:
         class: League\CommonMark\CommonMarkConverter
 
+    App\EventSubscriber\RateLimitSubscriber:
+        arguments:
+            $loginLimiter: '@limiter.login'
+            $twoFactorLimiter: '@limiter.two_factor'
+
 
