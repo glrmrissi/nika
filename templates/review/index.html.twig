@@ -10,6 +10,10 @@
 
 {% block body %}
   <div class="review-container">
+    <div class="review-progress-bar" id="progress-bar" style="display:none;">
+      <div class="review-progress-bar__fill" id="progress-fill"></div>
+    </div>
+
     <div id="review-area" style="display:none;flex-direction:column;align-items:center;width:100%;">
       <div class="review-card">
         <div class="review-card__char" id="kanji-char"></div>
@@ -30,13 +34,14 @@
         <div id="quality-buttons" style="display:none;">
           <p class="review-actions__label">How well did you know it?</p>
           <div class="review-actions__buttons">
-            <button class="btn btn--danger btn--sm" onclick="submitReview(0)">0 — Forgot</button>
-            <button class="btn btn--danger btn--sm" onclick="submitReview(1)">1</button>
-            <button class="btn btn--medium btn--sm" onclick="submitReview(2)">2</button>
-            <button class="btn btn--medium btn--sm" onclick="submitReview(3)">3 — Hard</button>
-            <button class="btn btn--success btn--sm" onclick="submitReview(4)">4 — Easy</button>
-            <button class="btn btn--success btn--sm" onclick="submitReview(5)">5 — Perfect</button>
+            <button class="btn btn--danger btn--sm" onclick="submitReview(0)">Forgot</button>
+            <button class="btn btn--danger btn--sm" onclick="submitReview(1)">Hard</button>
+            <button class="btn btn--medium btn--sm" onclick="submitReview(2)">Okay</button>
+            <button class="btn btn--success btn--sm" onclick="submitReview(3)">Good</button>
+            <button class="btn btn--success btn--sm" onclick="submitReview(4)">Easy</button>
+            <button class="btn btn--success btn--sm" onclick="submitReview(5)">Perfect</button>
           </div>
+          <p class="review-actions__hint">Press 1-6 to rate</p>
         </div>
       </div>
     </div>
@@ -44,7 +49,7 @@
     <p class="review-progress" id="review-progress"></p>
 
     {% if dueCount > 0 %}
-      <button class="btn btn--primary" onclick="startReview()" style="margin-top:16px;">
+      <button class="btn btn--primary" onclick="startReview()" style="margin-top:16px;" id="start-btn">
         Start Review ({{ dueCount }})
       </button>
     {% else %}
@@ -55,5 +60,5 @@
 
 {% block javascripts %}
 <script src="{{ asset('js/pages/review.js') }}"></script>
-<script>total = {{ dueCount }};</script>
+<script>total = {{ dueCount }}; var csrfToken = '{{ csrf_token('api') }}';</script>
 {% endblock %}

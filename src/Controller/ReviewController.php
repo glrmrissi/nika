@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 
 class ReviewController extends AbstractController
@@ -23,10 +24,26 @@ class ReviewController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $due = $kanjiRepo->findDueReviews($user);
-        $dueCount = count($due);
+        $tz = $user->getEffectiveTimezone();
+        $dueCount = $kanjiRepo->countDueReviews($user, $tz);
 
         return $this->render('review/index.html.twig', [
+            'dueCount' => $dueCount,
+        ]);
+    }
+
+    #[Route('/review/interactive', name: 'app_review_interactive')]
+    public function interactive(KanjiRepository $kanjiRepo): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $tz = $user->getEffectiveTimezone();
+        $dueCount = $kanjiRepo->countDueReviews($user, $tz);
+
+        return $this->render('review/interactive.html.twig', [
             'dueCount' => $dueCount,
         ]);
     }
@@ -40,16 +57,16 @@ class ReviewController extends AbstractController
         }
 
         $level = $request->query->get('level');
-        $kanji = $level
-            ? $kanjiRepo->findDueReviewsByLevel($user, $level)
-            : $kanjiRepo->findDueReviews($user);
-
-        if (empty($kanji)) {
-            return $this->json(['done' => true]);
+        $allowedLevels = ['N5', 'N4', 'N3', 'N2', 'N1'];
+        if ($level && !in_array($level, $allowedLevels, true)) {
+            return $this->json(['error' => 'Invalid level'], 400);
         }
 
-        shuffle($kanji);
-        $k = $kanji[0];
+        $k = $kanjiRepo->findRandomDueReview($user, $level, $user->getEffectiveTimezone());
+
+        if (!$k) {
+            return $this->json(['done' => true]);
+        }
 
         return $this->json([
             'done' => false,
@@ -66,17 +83,32 @@ class ReviewController extends AbstractController
     }
 
     #[Route('/review/submit', name: 'app_review_submit', methods: ['POST'])]
-    public function submit(Request $request, SrsService $srs, EntityManagerInterface $em): JsonResponse
+    public function submit(Request $request, SrsService $srs, EntityManagerInterface $em, RateLimiterFactory $reviewSubmitLimiter): JsonResponse
     {
+        $csrfToken = $request->headers->get('X-CSRF-Token');
+        if (!$csrfToken || !$this->isCsrfTokenValid('api', $csrfToken)) {
+            return $this->json(['error' => 'Invalid CSRF token'], 403);
+        }
+
+        $rateLimiter = $reviewSubmitLimiter->create($request->getClientIp());
+        $limit = $rateLimiter->consume(1);
+        if (!$limit->isAccepted()) {
+            return $this->json(['error' => 'Too many requests'], 429);
+        }
+
         $data = json_decode($request->getContent(), true);
         $kanjiId = $data['kanji_id'] ?? null;
         $quality = $data['quality'] ?? null;
 
-        if (!$kanjiId || $quality === null) {
-            return $this->json(['error' => 'Invalid request'], 400);
+        if (!$kanjiId || !is_int((int) $kanjiId) || (int) $kanjiId < 1) {
+            return $this->json(['error' => 'Invalid kanji_id'], 400);
         }
 
-        $kanji = $em->getRepository(Kanji::class)->find($kanjiId);
+        if ($quality === null || !is_int((int) $quality) || (int) $quality < 0 || (int) $quality > 5) {
+            return $this->json(['error' => 'Quality must be 0-5'], 400);
+        }
+
+        $kanji = $em->getRepository(Kanji::class)->find((int) $kanjiId);
         if (!$kanji) {
             return $this->json(['error' => 'Kanji not found'], 404);
         }

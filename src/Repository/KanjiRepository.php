@@ -127,4 +127,32 @@ class KanjiRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findRandomDueReview(User $user, ?string $level = null, string $timezone = 'UTC'): ?Kanji
+    {
+        $now = new \DateTime('now', new \DateTimeZone($timezone));
+
+        $qb = $this->createQueryBuilder('k')
+            ->select('k.id')
+            ->join('k.userKanjis', 'uk')
+            ->andWhere('uk.user = :user')
+            ->andWhere('uk.nextReviewAt <= :now')
+            ->setParameter('user', $user)
+            ->setParameter('now', $now)
+            ->orderBy('RANDOM()')
+            ->setMaxResults(1);
+
+        if ($level) {
+            $qb->andWhere('k.jlptLevel = :level')
+                ->setParameter('level', $level);
+        }
+
+        $id = $qb->getQuery()->getSingleScalarResult();
+
+        if (!$id) {
+            return null;
+        }
+
+        return $this->find((int) $id);
+    }
 }

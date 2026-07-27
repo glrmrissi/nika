@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Interactive Review | nika{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="{{ asset('css/pages/review.css') }}">
+{% endblock %}
+
+{% block body %}
+  <div class="review-container">
+    <div class="review-progress-bar" id="progress-bar" style="display:none;">
+      <div class="review-progress-bar__fill" id="progress-fill"></div>
+    </div>
+
+    <div id="review-area" style="display:none;flex-direction:column;align-items:center;width:100%;">
+      <div class="review-card">
+        <div class="review-card__char" id="kanji-char"></div>
+        <div class="review-input-area" id="input-area">
+          <input type="text" class="review-input" id="reading-input" placeholder="Type the reading..." autocomplete="off" spellcheck="false">
+          <button class="btn btn--primary review-input__btn" id="check-btn" onclick="checkAnswer()">Check</button>
+        </div>
+        <div class="review-result" id="result-area" style="display:none;">
+          <p class="review-result__text" id="result-text"></p>
+          <div class="review-readings" id="readings-list"></div>
+        </div>
+      </div>
+
+      <button class="btn btn--primary review-next-btn" id="next-btn" style="display:none;" onclick="nextKanji()">
+        Next
+      </button>
+    </div>
+
+    <p class="review-progress" id="review-progress"></p>
+
+    {% if dueCount > 0 %}
+      <button class="btn btn--primary" onclick="startReview()" style="margin-top:16px;" id="start-btn">
+        Start Interactive Review ({{ dueCount }})
+      </button>
+    {% else %}
+      <p style="color:var(--color-secondary);margin-top:16px;">No kanji due for review.</p>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('js/pages/review-interactive.js') }}"></script>
+<script>total = {{ dueCount }}; var csrfToken = '{{ csrf_token('api') }}';</script>
+{% endblock %}
