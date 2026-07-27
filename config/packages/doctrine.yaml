@@ -12,3 +12,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+        metadata_cache_driver:
+            type: pool
+            pool: doctrine.cache
+        query_cache_driver:
+            type: pool
+            pool: doctrine.cache
+        result_cache_driver:
+            type: pool
+            pool: doctrine.cache
