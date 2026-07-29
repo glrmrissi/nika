@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\ActivityRepository;
 use App\Repository\KanjiRepository;
 use App\Repository\ReviewLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 class DashboardController extends AbstractController
 {
     #[Route('/', name: 'app_home')]
-    public function index(Request $request, KanjiRepository $kanjiRepo, ReviewLogRepository $reviewLogRepo): Response
+    public function index(Request $request, KanjiRepository $kanjiRepo, ReviewLogRepository $reviewLogRepo, ActivityRepository $activityRepo): Response
     {
         $user = $this->getUser();
         $tz = $user?->getEffectiveTimezone() ?? 'UTC';
@@ -28,13 +29,13 @@ class DashboardController extends AbstractController
             $byLevel = [];
         }
 
-        $reviewedToday = $reviewLogRepo->countReviewsToday($tz);
-        $streak = $reviewLogRepo->countStreakDays($user, $tz);
+        $reviewedToday = $activityRepo->countToday($tz);
+        $streak = $activityRepo->countStreakDays($user, $tz);
 
         if ($user instanceof User) {
-            $thisWeek = $reviewLogRepo->countThisWeek($user, $tz);
-            $thisMonth = $reviewLogRepo->countThisMonth($user, $tz);
-            $thisYear = $reviewLogRepo->countThisYear($user, $tz);
+            $thisWeek = $activityRepo->countThisWeek($user, $tz);
+            $thisMonth = $activityRepo->countThisMonth($user, $tz);
+            $thisYear = $activityRepo->countThisYear($user, $tz);
         } else {
             $thisWeek = 0;
             $thisMonth = 0;

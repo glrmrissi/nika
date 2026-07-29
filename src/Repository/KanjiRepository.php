@@ -132,22 +132,19 @@ class KanjiRepository extends ServiceEntityRepository
     {
         $now = new \DateTime('now', new \DateTimeZone($timezone));
 
-        $qb = $this->createQueryBuilder('k')
-            ->select('k.id')
-            ->join('k.userKanjis', 'uk')
-            ->andWhere('uk.user = :user')
-            ->andWhere('uk.nextReviewAt <= :now')
-            ->setParameter('user', $user)
-            ->setParameter('now', $now)
-            ->orderBy('RANDOM()')
-            ->setMaxResults(1);
+        $conn = $this->getEntityManager()->getConnection();
+        $params = ['user_id' => $user->getId(), 'now' => $now->format('Y-m-d H:i:s')];
+
+        $sql = 'SELECT k.id FROM kanji k INNER JOIN user_kanji uk ON k.id = uk.kanji_id WHERE uk.user_id = :user_id AND uk.nextReviewAt <= :now';
 
         if ($level) {
-            $qb->andWhere('k.jlptLevel = :level')
-                ->setParameter('level', $level);
+            $sql .= ' AND k.jlptLevel = :level';
+            $params['level'] = $level;
         }
 
-        $id = $qb->getQuery()->getSingleScalarResult();
+        $sql .= ' ORDER BY RANDOM() LIMIT 1';
+
+        $id = $conn->fetchOne($sql, $params);
 
         if (!$id) {
             return null;

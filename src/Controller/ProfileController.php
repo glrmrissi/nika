@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\NameHistory;
 use App\Entity\User;
 use App\Form\ProfileFormType;
+use App\Repository\ActivityRepository;
 use App\Repository\KanjiRepository;
 use App\Repository\ReviewLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,19 +21,19 @@ class ProfileController extends AbstractController
     private const AVATAR_DIR = 'uploads/avatars';
 
     #[Route('/profile', name: 'app_profile')]
-    public function index(KanjiRepository $kanjiRepo, ReviewLogRepository $reviewLogRepo): Response
+    public function index(KanjiRepository $kanjiRepo, ReviewLogRepository $reviewLogRepo, ActivityRepository $activityRepo): Response
     {
         $user = $this->getUser();
         $tz = $user->getEffectiveTimezone();
 
-        $reviewedToday = $reviewLogRepo->countReviewsToday($tz);
-        $streak = $reviewLogRepo->countStreakDays($user, $tz);
+        $reviewedToday = $activityRepo->countToday($tz);
+        $streak = $activityRepo->countStreakDays($user, $tz);
         $totalKanji = $kanjiRepo->count([]);
         $dueCount = $kanjiRepo->countDueReviews($user, $tz);
-        $thisWeek = $reviewLogRepo->countThisWeek($user, $tz);
-        $thisMonth = $reviewLogRepo->countThisMonth($user, $tz);
-        $thisYear = $reviewLogRepo->countThisYear($user, $tz);
-        $heatmap = $reviewLogRepo->getHeatmapData($user, $tz);
+        $thisWeek = $activityRepo->countThisWeek($user, $tz);
+        $thisMonth = $activityRepo->countThisMonth($user, $tz);
+        $thisYear = $activityRepo->countThisYear($user, $tz);
+        $heatmap = $activityRepo->getHeatmapData($user, $tz);
 
         return $this->render('profile/index.html.twig', [
             'reviewedToday' => $reviewedToday,
