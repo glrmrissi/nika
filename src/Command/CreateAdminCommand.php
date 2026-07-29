@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Entity\ActivityType;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -46,8 +47,31 @@ class CreateAdminCommand extends Command
             $output->writeln(sprintf('<info>Admin "%s" created.</info>', $email));
         }
 
+        $this->seedActivityTypes($output);
+
         $this->em->flush();
 
         return Command::SUCCESS;
+    }
+
+    private function seedActivityTypes(OutputInterface $output): void
+    {
+        $types = [
+            ['name' => 'Kanji Review', 'slug' => 'review_kanji'],
+            ['name' => 'Grammar Review', 'slug' => 'review_grammar'],
+            ['name' => 'Grammar Quiz', 'slug' => 'quiz'],
+        ];
+
+        $repo = $this->em->getRepository(ActivityType::class);
+        foreach ($types as $data) {
+            $existing = $repo->findOneBy(['slug' => $data['slug']]);
+            if (!$existing) {
+                $type = new ActivityType();
+                $type->setName($data['name']);
+                $type->setSlug($data['slug']);
+                $this->em->persist($type);
+                $output->writeln(sprintf('<info>ActivityType "%s" created.</info>', $data['slug']));
+            }
+        }
     }
 }

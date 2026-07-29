@@ -30,6 +30,10 @@ services:
     League\CommonMark\ConverterInterface:
         class: League\CommonMark\CommonMarkConverter
 
+    App\Service\DiscordNotifier:
+        arguments:
+            $discordWebhookUrl: '%env(DISCORD_WEBHOOK_URL)%'
+
     App\EventSubscriber\RateLimitSubscriber:
         arguments:
             $loginLimiter: '@limiter.login'

@@ -11,8 +11,9 @@ class DiscordNotifier
 
     public function __construct(
         private HttpClientInterface $httpClient,
+        string $discordWebhookUrl = null,
     ) {
-        $this->webhookUrl = $_ENV['DISCORD_WEBHOOK_URL'] ?? null;
+        $this->webhookUrl = $discordWebhookUrl;
     }
 
     public function send(string $message, array $extra = []): void
