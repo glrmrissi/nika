@@ -100,11 +100,11 @@ class ReviewController extends AbstractController
         $kanjiId = $data['kanji_id'] ?? null;
         $quality = $data['quality'] ?? null;
 
-        if (!$kanjiId || !is_int((int) $kanjiId) || (int) $kanjiId < 1) {
+        if (!is_int($kanjiId) || $kanjiId < 1) {
             return $this->json(['error' => 'Invalid kanji_id'], 400);
         }
 
-        if ($quality === null || !is_int((int) $quality) || (int) $quality < 0 || (int) $quality > 5) {
+        if (!is_int($quality) || $quality < 0 || $quality > 5) {
             return $this->json(['error' => 'Quality must be 0-5'], 400);
         }
 
