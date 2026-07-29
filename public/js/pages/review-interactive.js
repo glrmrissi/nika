@@ -44,7 +44,9 @@ function showKanji(kanji) {
 }
 
 function normalizeReading(str) {
-  return str.replace(/\./g, '').trim();
+  return str.replace(/\./g, '').replace(/[\u30A1-\u30F6]/g, function(ch) {
+    return String.fromCharCode(ch.charCodeAt(0) - 0x60);
+  }).trim();
 }
 
 function getCorrectReadings(kanji) {
@@ -158,5 +160,5 @@ document.addEventListener('keydown', function(e) {
 });
 
 document.getElementById('reading-input').addEventListener('input', function() {
-  this.value = this.value.replace(/[^ぁ-んァ-ヶー\u30FC]/g, '');
+  this.value = this.value.replace(/[^ぁ-んァ-ヶー]/g, '');
 });

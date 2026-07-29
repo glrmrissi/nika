@@ -23,6 +23,18 @@
       <i class="bi bi-book"></i>
       <span>Kanji</span>
     </a>
+    <a href="{{ path('app_grammar_list') }}" class="sidebar__link {% if app.current_route == 'app_grammar_list' %}sidebar__link--active{% endif %}">
+      <i class="bi bi-pencil"></i>
+      <span>Particles</span>
+    </a>
+    <a href="{{ path('app_grammar_review') }}" class="sidebar__link {% if app.current_route == 'app_grammar_review' %}sidebar__link--active{% endif %}">
+      <i class="bi bi-arrow-repeat"></i>
+      <span>P-Review</span>
+    </a>
+    <a href="{{ path('app_grammar_quiz') }}" class="sidebar__link {% if app.current_route == 'app_grammar_quiz' %}sidebar__link--active{% endif %}">
+      <i class="bi bi-question-circle"></i>
+      <span>P-Quiz</span>
+    </a>
     {% if app.user %}
       <hr class="sidebar__divider">
       <a href="{{ path('app_profile') }}" class="sidebar__link">

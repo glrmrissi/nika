@@ -18,7 +18,9 @@
 .kanji-browser__tab { padding: 6px 16px; border-radius: var(--radius-full); font-size: 13px; font-weight: 500; cursor: pointer; transition: color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast); color: var(--color-secondary); border: none; background: none; }
 .kanji-browser__tab--active { background: var(--color-surface-container-lowest); color: var(--color-on-surface); box-shadow: var(--shadow-card); }
 .kanji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-.kanji-grid__item { background: var(--color-surface-container-low); border-radius: var(--radius-md); padding: 12px 8px 8px; text-align: center; cursor: pointer; transition: background var(--transition-fast); border: 2px solid transparent; position: relative; }
+.kanji-grid__item { background: var(--color-surface-container-low); border-radius: var(--radius-md); padding: 12px 8px 8px; text-align: center; cursor: pointer; transition: background var(--transition-fast); border: 2px solid transparent; position: relative; animation: kanji-item-in 0.3s var(--ease-out) both; }
+
+@keyframes kanji-item-in { from { opacity: 0; } to { opacity: 1; } }
 .kanji-grid__item--selected { border-color: var(--color-primary); }
 .kanji-grid__item--done { opacity: 0.55; }
 .kanji-grid__item--done:hover { opacity: 0.75; }
@@ -249,7 +251,7 @@ function renderKanji(data) {
   }
 
   var html = '';
-  data.data.forEach(function (k) {
+  data.data.forEach(function (k, idx) {
     var onyomi = k.onyomi || '';
     var meaning = k.meanings ? k.meanings.split(',')[0].trim() : '';
     var selected = k.selected ? ' kanji-grid__item--selected' : '';
@@ -261,7 +263,7 @@ function renderKanji(data) {
     var mng = escapeHtml(meaning);
     var lvl = escapeHtml(k.jlptLevel || '');
 
-    html += '<div class="kanji-grid__item' + selected + done + '" data-id="' + k.id + '" data-char="' + char + '" data-onyomi="' + escapeHtml(onyomi) + '" data-kun="' + kun + '" data-mng="' + mng + '" data-lvl="' + lvl + '" data-selected="' + (k.selected ? '1' : '0') + '" data-done="' + (k.done ? '1' : '0') + '">';
+    html += '<div class="kanji-grid__item' + selected + done + '" style="animation-delay:' + (idx * 20) + 'ms" data-id="' + k.id + '" data-char="' + char + '" data-onyomi="' + escapeHtml(onyomi) + '" data-kun="' + kun + '" data-mng="' + mng + '" data-lvl="' + lvl + '" data-selected="' + (k.selected ? '1' : '0') + '" data-done="' + (k.done ? '1' : '0') + '">';
     html += '<div class="kanji-grid__char">' + char + '</div>';
     html += '<div class="kanji-grid__reading">' + escapeHtml(onyomi) + '</div>';
     html += '<div class="kanji-grid__meaning">' + mng + '</div>';
@@ -273,14 +275,34 @@ function renderKanji(data) {
   grid.innerHTML = html;
 
   var phtml = '';
-  phtml += '<button class="pagination__btn" data-page="' + (currentPage - 1) + '" ' + (currentPage <= 1 ? 'disabled' : '') + '>Prev</button>';
-  for (var i = 1; i <= Math.min(totalPages, 10); i++) {
-    phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" data-page="' + i + '">' + i + '</button>';
+  phtml += '<button class="pagination__btn" data-page="' + (currentPage - 1) + '" ' + (currentPage <= 1 ? 'disabled' : '') + '>&laquo;</button>';
+
+  if (totalPages <= 7) {
+    for (var i = 1; i <= totalPages; i++) {
+      phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" data-page="' + i + '">' + i + '</button>';
+    }
+  } else {
+    phtml += '<button class="pagination__btn ' + (1 === currentPage ? 'pagination__btn--active' : '') + '" data-page="1">1</button>';
+
+    var start = Math.max(2, currentPage - 2);
+    var end = Math.min(totalPages - 1, currentPage + 2);
+
+    if (start > 2) {
+      phtml += '<span style="padding:6px 4px;color:var(--color-secondary);">&hellip;</span>';
+    }
+
+    for (var i = start; i <= end; i++) {
+      phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" data-page="' + i + '">' + i + '</button>';
+    }
+
+    if (end < totalPages - 1) {
+      phtml += '<span style="padding:6px 4px;color:var(--color-secondary);">&hellip;</span>';
+    }
+
+    phtml += '<button class="pagination__btn ' + (totalPages === currentPage ? 'pagination__btn--active' : '') + '" data-page="' + totalPages + '">' + totalPages + '</button>';
   }
-  if (totalPages > 10) {
-    phtml += '<span style="padding:6px 4px;color:var(--color-secondary);">...</span>';
-  }
-  phtml += '<button class="pagination__btn" data-page="' + (currentPage + 1) + '" ' + (currentPage >= totalPages ? 'disabled' : '') + '>Next</button>';
+
+  phtml += '<button class="pagination__btn" data-page="' + (currentPage + 1) + '" ' + (currentPage >= totalPages ? 'disabled' : '') + '>&raquo;</button>';
   pagination.innerHTML = phtml;
 }
 

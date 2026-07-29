@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="{{ asset('css/components/mobile-nav.css') }}">
   <link rel="stylesheet" href="{{ asset('css/components/ui.css') }}">
   <link rel="stylesheet" href="{{ asset('css/components/tooltip.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/components/scroll-top.css') }}">
   {% block stylesheets %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -53,5 +54,14 @@
   <script src="{{ asset('js/base.js') }}"></script>
   <script src="{{ asset('js/components/tooltip.js') }}"></script>
   {% block javascripts %}{% endblock %}
+
+  <button class="scroll-top" id="scroll-top" aria-label="Scroll to top">
+    <svg class="scroll-top__ring" viewBox="0 0 44 44" width="44" height="44">
+      <rect class="scroll-top__ring-track" x="2" y="2" width="40" height="40" fill="none" stroke-width="2.5" />
+      <path class="scroll-top__ring-fill" d="M 22 2 L 42 2 L 42 42 L 2 42 L 2 2 L 22 2" fill="none" stroke-width="2.5"
+        stroke-dasharray="160" stroke-dashoffset="160" />
+    </svg>
+    <span class="scroll-top__icon"><i class="bi bi-arrow-up"></i></span>
+  </button>
 </body>
 </html>

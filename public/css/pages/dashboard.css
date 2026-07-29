@@ -116,7 +116,7 @@
 .pbar__fill {
   height: 100%;
   background: var(--color-primary);
-  transition: width 0.3s;
+  transition: width var(--transition-normal);
 }
 
 /* Recently Studied */
@@ -184,7 +184,7 @@
 .rcard__bar-fill {
   height: 100%;
   background: var(--color-primary);
-  transition: width 0.3s;
+  transition: width var(--transition-normal);
 }
 
 /* Reviews */
@@ -256,7 +256,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: login-overlay 1.1s ease-out forwards;
+  animation: login-overlay 1.1s var(--ease-out) forwards;
   pointer-events: none;
 }
 

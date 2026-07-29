@@ -143,4 +143,48 @@ document.addEventListener('DOMContentLoaded', function () {
   if (sidebarToggle) sidebarToggle.addEventListener('click', openSidebar);
   if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
   if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+
+  var scrollBtn = document.getElementById('scroll-top');
+  if (scrollBtn) {
+    var fill = scrollBtn.querySelector('.scroll-top__ring-fill');
+    var circumference = 160;
+    var ticking = false;
+
+    function updateScrollRing() {
+      var scrollTop = window.scrollY || document.documentElement.scrollTop;
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+
+      if (docHeight <= 0) {
+        scrollBtn.classList.remove('scroll-top--visible');
+        return;
+      }
+
+      if (scrollTop > 80) {
+        scrollBtn.classList.add('scroll-top--visible');
+      } else {
+        scrollBtn.classList.remove('scroll-top--visible');
+      }
+
+      var progress = Math.min(scrollTop / docHeight, 1);
+      var offset = circumference - (progress * circumference);
+      fill.style.strokeDashoffset = offset;
+      ticking = false;
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(function () {
+          updateScrollRing();
+        });
+        ticking = true;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    updateScrollRing();
+
+    scrollBtn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 });

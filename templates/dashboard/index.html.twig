@@ -103,4 +103,27 @@
 
 {% block javascripts %}
   {{ parent() }}
+  <script nonce="{{ csp_nonce('script') }}">
+  document.addEventListener('DOMContentLoaded', function () {
+    function animateValue(el, duration) {
+      var start = 0;
+      var end = parseInt(el.textContent, 10);
+      if (isNaN(end) || end === 0) return;
+      var startTime = performance.now();
+      el.textContent = start;
+      function tick(now) {
+        var elapsed = now - startTime;
+        var progress = Math.min(elapsed / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(start + (end - start) * eased);
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    document.querySelectorAll('.rstats__value, .rstats__due-value').forEach(function (el) {
+      animateValue(el, 600);
+    });
+  });
+  </script>
 {% endblock %}

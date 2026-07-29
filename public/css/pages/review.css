@@ -19,11 +19,12 @@
 .review-progress-bar__fill {
   height: 100%;
   background: var(--color-primary);
-  transition: width 0.3s ease;
+  transition: width var(--transition-normal);
   width: 0%;
 }
 
 .review-card {
+  position: relative;
   width: 100%;
   max-width: 480px;
   background: var(--color-surface-container-lowest);
@@ -49,7 +50,7 @@
 
 .review-card__info {
   display: none;
-  animation: review-reveal 0.2s ease-out;
+  animation: review-reveal 0.2s var(--ease-out);
 }
 
 .review-card__info--visible {
@@ -149,22 +150,35 @@
 
 .review-input-area {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
   width: 100%;
   max-width: 360px;
+  position: relative;
+}
+
+.review-card__info-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: var(--color-secondary);
+  font-size: 18px;
+  cursor: help;
+  z-index: 1;
 }
 
 .review-input {
   flex: 1;
-  padding: 14px 16px;
-  font-size: 22px;
+  height: 48px;
+  padding: 0 16px;
+  font-size: 20px;
   text-align: center;
   background: var(--color-surface-container);
   color: var(--color-on-surface);
   border: 2px solid var(--color-outline-variant);
   transition: border-color var(--transition-fast);
   font-family: var(--font-body);
+  box-sizing: border-box;
 }
 
 .review-input:focus {
@@ -174,18 +188,21 @@
 
 .review-input::placeholder {
   color: var(--color-outline);
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .review-input__btn {
-  padding: 14px 20px;
+  height: 48px;
+  padding: 0 20px;
   flex-shrink: 0;
+  box-sizing: border-box;
+  line-height: 1;
 }
 
 .review-result {
   text-align: center;
   margin-top: 20px;
-  animation: review-reveal 0.2s ease-out;
+  animation: review-reveal 0.2s var(--ease-out);
 }
 
 .review-result__text {

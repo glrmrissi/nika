@@ -88,6 +88,23 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  --delay: 0s;
+}
+
+.sidebar--open .sidebar__link {
+  animation: sidebar-link-in 0.25s var(--ease-out) var(--delay) both;
+}
+
+.sidebar__link:nth-of-type(1) { --delay: 0.03s; }
+.sidebar__link:nth-of-type(2) { --delay: 0.06s; }
+.sidebar__link:nth-of-type(3) { --delay: 0.09s; }
+.sidebar__link:nth-of-type(4) { --delay: 0.12s; }
+.sidebar__link:nth-of-type(5) { --delay: 0.15s; }
+.sidebar__link:nth-of-type(6) { --delay: 0.18s; }
+
+@keyframes sidebar-link-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (hover: hover) and (pointer: fine) {

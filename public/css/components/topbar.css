@@ -5,7 +5,6 @@
   background: color-mix(in srgb, var(--color-background) 85%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-outline) 30%, transparent);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -16,7 +15,6 @@
 
 [data-theme="dark"] .topbar {
   background: color-mix(in srgb, var(--color-background) 88%, transparent);
-  border-bottom-color: color-mix(in srgb, var(--color-outline) 6%, transparent);
 }
 
 .topbar__start {

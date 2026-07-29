@@ -2,7 +2,7 @@
 
 namespace App\Twig;
 
-use App\Repository\ReviewLogRepository;
+use App\Repository\ActivityRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
@@ -13,7 +13,7 @@ class AppExtension extends AbstractExtension
     private const CACHE_TTL = 300;
 
     public function __construct(
-        private readonly ReviewLogRepository $reviewLogRepo,
+        private readonly ActivityRepository $activityRepo,
         private readonly Security $security,
         private readonly RequestStack $requestStack,
     ) {}
@@ -35,7 +35,7 @@ class AppExtension extends AbstractExtension
 
         $user = $this->security->getUser();
         $tz = $user?->getEffectiveTimezone() ?? 'UTC';
-        $value = $this->reviewLogRepo->countStreakDays($user, $tz);
+        $value = $this->activityRepo->countStreakDays($user, $tz);
 
         $session->set('_streak_cache', [
             'value' => $value,

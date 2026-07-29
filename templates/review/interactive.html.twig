@@ -17,8 +17,9 @@
     <div id="review-area" style="display:none;flex-direction:column;align-items:center;width:100%;">
       <div class="review-card">
         <div class="review-card__char" id="kanji-char"></div>
+        <i class="bi bi-info-circle review-card__info-icon" data-tooltip="Type the reading in hiragana or katakana. On&#39;yomi are in katakana, kun&#39;yomi are in hiragana."></i>
         <div class="review-input-area" id="input-area">
-          <input type="text" class="review-input" id="reading-input" placeholder="Type the reading..." autocomplete="off" spellcheck="false">
+          <input type="text" class="review-input" id="reading-input" placeholder="Reading..." autocomplete="off" spellcheck="false">
           <button class="btn btn--primary review-input__btn" id="check-btn">Check</button>
         </div>
         <div class="review-result" id="result-area" style="display:none;">
