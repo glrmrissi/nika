@@ -1,0 +1,266 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Particles | nika{% endblock %}
+
+{% block stylesheets %}
+<style>
+.particle-browser { max-width: 800px; margin: 0 auto; }
+.particle-browser__header { margin-bottom: 24px; }
+.particle-browser__toolbar { display: flex; align-items: center; margin-bottom: 24px; }
+.particle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.particle-grid__item { background: var(--color-surface-container-low); border-radius: var(--radius-md); padding: 16px; cursor: pointer; transition: background var(--transition-fast), box-shadow var(--transition-fast); border: 2px solid transparent; animation: particle-item-in 0.3s var(--ease-out) both; }
+.particle-grid__item:hover { background: var(--color-surface-container); border-color: var(--color-outline-variant); }
+.particle-grid__top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.particle-grid__char { font-size: 24px; font-weight: 600; line-height: 1.2; }
+.particle-grid__romaji { font-size: 14px; color: var(--color-secondary); }
+.particle-grid__name { font-size: 12px; color: var(--color-primary); font-weight: 600; margin-bottom: 6px; }
+.particle-grid__meaning { font-size: 13px; color: var(--color-on-surface-variant); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+@keyframes particle-item-in { from { opacity: 0; } to { opacity: 1; } }
+
+.particle-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: flex-start; justify-content: center; padding: 40px 24px; overflow-y: auto; }
+.particle-modal--open { display: flex; }
+.particle-modal__content { background: var(--color-surface-container-lowest); border-radius: var(--radius-xl); padding: 32px; max-width: 560px; width: 100%; position: relative; margin-top: 40px; animation: modal-in 0.2s var(--ease-out) 0.05s both; }
+@keyframes modal-in { from { opacity: 0; } to { opacity: 1; } }
+.particle-modal__close { position: absolute; top: 12px; right: 12px; font-size: 20px; color: var(--color-secondary); cursor: pointer; background: none; border: none; line-height: 1; }
+.particle-modal__header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.particle-modal__char { font-size: 36px; font-weight: 700; line-height: 1.2; }
+.particle-modal__romaji { font-size: 16px; color: var(--color-secondary); }
+.particle-modal__name { font-size: 13px; color: var(--color-primary); font-weight: 600; margin-bottom: 16px; }
+.particle-modal__section { margin-bottom: 16px; }
+.particle-modal__section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-secondary); margin-bottom: 4px; }
+.particle-modal__meaning { font-size: 14px; line-height: 1.6; color: var(--color-on-surface); }
+.particle-modal__usage { font-size: 14px; line-height: 1.6; color: var(--color-on-surface-variant); }
+.particle-modal__example { background: var(--color-surface-container); border-radius: var(--radius-md); padding: 12px; margin-bottom: 8px; }
+.particle-modal__example-jp { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+.particle-modal__example-reading { font-size: 13px; color: var(--color-secondary); margin-bottom: 2px; }
+.particle-modal__example-translation { font-size: 13px; color: var(--color-on-surface-variant); }
+.particle-modal__meta { display: flex; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--color-outline-variant); }
+.particle-modal__badge { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: var(--radius-full); background: var(--color-surface-container); color: var(--color-secondary); }
+.pagination { display: flex; justify-content: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+.pagination__btn { padding: 6px 14px; border-radius: var(--radius-md); border: 1px solid var(--color-outline-variant); font-size: 13px; font-weight: 500; background: var(--color-surface-container-lowest); cursor: pointer; transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast); color: var(--color-on-surface); }
+.pagination__btn:hover { border-color: var(--color-primary); }
+.pagination__btn--active { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+.pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.particle-browser__loading { text-align: center; padding: 40px; color: var(--color-secondary); }
+@media (max-width: 480px) { .particle-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="particle-browser">
+  <div class="particle-browser__header">
+    <h2 class="page-title">Particles</h2>
+    <p class="page-subtitle">Japanese particles (joshi). Click any card to see rules and examples.</p>
+  </div>
+
+  <div class="particle-browser__toolbar">
+    <p style="font-size:13px;color:var(--color-secondary);">Click any card to see rules and examples.</p>
+  </div>
+
+  <div id="particle-grid" class="particle-grid"></div>
+
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<div class="particle-modal" id="particle-modal">
+  <div class="particle-modal__content">
+    <button class="particle-modal__close" id="modal-close">&times;</button>
+    <div class="particle-modal__header">
+      <span class="particle-modal__char" id="modal-char"></span>
+      <span class="particle-modal__romaji" id="modal-romaji"></span>
+    </div>
+    <div class="particle-modal__name" id="modal-name"></div>
+
+    <div class="particle-modal__section">
+      <div class="particle-modal__section-title">Meaning</div>
+      <div class="particle-modal__meaning" id="modal-meaning"></div>
+    </div>
+
+    <div class="particle-modal__section">
+      <div class="particle-modal__section-title">Usage Rules</div>
+      <div class="particle-modal__usage" id="modal-usage"></div>
+    </div>
+
+    <div class="particle-modal__section">
+      <div class="particle-modal__section-title">Examples</div>
+      <div class="particle-modal__example" id="modal-example-1"></div>
+      <div class="particle-modal__example" id="modal-example-2"></div>
+    </div>
+
+    <div class="particle-modal__meta" id="modal-meta"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script nonce="{{ csp_nonce('script') }}">
+var currentPage = 1;
+var totalPages = 1;
+
+function escapeHtml(str) {
+  if (!str) return '';
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+function getCacheKey(page) {
+  return 'grammar_list_' + page;
+}
+
+function getFromCache(page) {
+  var key = getCacheKey(page);
+  var cached = localStorage.getItem(key);
+  if (!cached) return null;
+  try {
+    var data = JSON.parse(cached);
+    if (Date.now() - data.ts < 3600000) return data.payload;
+  } catch(e) {}
+  localStorage.removeItem(key);
+  return null;
+}
+
+function setCache(page, payload) {
+  var key = getCacheKey(page);
+  localStorage.setItem(key, JSON.stringify({ ts: Date.now(), payload: payload }));
+}
+
+function fetchParticles(page) {
+  var cached = getFromCache(page);
+  if (cached) {
+    renderParticles(cached);
+    return;
+  }
+
+  var grid = document.getElementById('particle-grid');
+  grid.innerHTML = '<div class="particle-browser__loading">Loading...</div>';
+
+  fetch('/api/grammar?page=' + page)
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      setCache(page, data);
+      renderParticles(data);
+    });
+}
+
+function renderParticles(data) {
+  var grid = document.getElementById('particle-grid');
+  var pagination = document.getElementById('pagination');
+
+  currentPage = data.page;
+  totalPages = data.pages;
+
+  if (!data.data || data.data.length === 0) {
+    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--color-secondary);padding:40px;">No particles found.</p>';
+    pagination.innerHTML = '';
+    return;
+  }
+
+  var html = '';
+  data.data.forEach(function (p, idx) {
+    html += '<div class="particle-grid__item" style="animation-delay:' + (idx * 20) + 'ms" data-id="' + p.id + '">';
+    html += '  <div class="particle-grid__top">';
+    html += '    <span class="particle-grid__char">' + escapeHtml(p.particle) + '</span>';
+    html += '    <span class="particle-grid__romaji">' + escapeHtml(p.romaji) + '</span>';
+    html += '  </div>';
+    html += '  <div class="particle-grid__name">' + escapeHtml(p.name) + '</div>';
+    html += '  <div class="particle-grid__meaning">' + escapeHtml(p.meaning) + '</div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+
+  var phtml = '';
+  phtml += '<button class="pagination__btn" data-page="' + (currentPage - 1) + '" ' + (currentPage <= 1 ? 'disabled' : '') + '>&laquo;</button>';
+
+  if (totalPages <= 7) {
+    for (var i = 1; i <= totalPages; i++) {
+      phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" data-page="' + i + '">' + i + '</button>';
+    }
+  } else {
+    phtml += '<button class="pagination__btn ' + (1 === currentPage ? 'pagination__btn--active' : '') + '" data-page="1">1</button>';
+
+    var start = Math.max(2, currentPage - 2);
+    var end = Math.min(totalPages - 1, currentPage + 2);
+
+    if (start > 2) {
+      phtml += '<span style="padding:6px 4px;color:var(--color-secondary);">&hellip;</span>';
+    }
+
+    for (var i = start; i <= end; i++) {
+      phtml += '<button class="pagination__btn ' + (i === currentPage ? 'pagination__btn--active' : '') + '" data-page="' + i + '">' + i + '</button>';
+    }
+
+    if (end < totalPages - 1) {
+      phtml += '<span style="padding:6px 4px;color:var(--color-secondary);">&hellip;</span>';
+    }
+
+    phtml += '<button class="pagination__btn ' + (totalPages === currentPage ? 'pagination__btn--active' : '') + '" data-page="' + totalPages + '">' + totalPages + '</button>';
+  }
+
+  phtml += '<button class="pagination__btn" data-page="' + (currentPage + 1) + '" ' + (currentPage >= totalPages ? 'disabled' : '') + '>&raquo;</button>';
+  pagination.innerHTML = phtml;
+}
+
+function goToPage(page) {
+  if (page < 1 || page > totalPages) return;
+  currentPage = page;
+  fetchParticles(currentPage);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showDetail(id) {
+  fetch('/api/grammar/' + id)
+    .then(function (r) { return r.json(); })
+    .then(function (p) {
+      document.getElementById('modal-char').textContent = p.particle;
+      document.getElementById('modal-romaji').textContent = p.romaji;
+      document.getElementById('modal-name').textContent = p.name;
+      document.getElementById('modal-meaning').textContent = p.meaning;
+      document.getElementById('modal-usage').textContent = p.usageNote;
+
+      var ex1 = document.getElementById('modal-example-1');
+      ex1.innerHTML = '<div class="particle-modal__example-jp">' + escapeHtml(p.exampleOne) + '</div>' +
+        '<div class="particle-modal__example-reading">' + escapeHtml(p.exampleOneReading) + '</div>' +
+        '<div class="particle-modal__example-translation">' + escapeHtml(p.exampleOneTranslation) + '</div>';
+
+      var ex2 = document.getElementById('modal-example-2');
+      ex2.innerHTML = '<div class="particle-modal__example-jp">' + escapeHtml(p.exampleTwo) + '</div>' +
+        '<div class="particle-modal__example-reading">' + escapeHtml(p.exampleTwoReading) + '</div>' +
+        '<div class="particle-modal__example-translation">' + escapeHtml(p.exampleTwoTranslation) + '</div>';
+
+      document.getElementById('modal-meta').innerHTML =
+        '<span class="particle-modal__badge">' + escapeHtml(p.category) + '</span>';
+
+      document.getElementById('particle-modal').classList.add('particle-modal--open');
+    });
+}
+
+function closeModal() {
+  document.getElementById('particle-modal').classList.remove('particle-modal--open');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+
+  document.getElementById('particle-modal').addEventListener('click', function (e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.getElementById('particle-grid').addEventListener('click', function (e) {
+    var item = e.target.closest('.particle-grid__item');
+    if (!item) return;
+    showDetail(parseInt(item.dataset.id));
+  });
+
+  document.getElementById('pagination').addEventListener('click', function (e) {
+    var btn = e.target.closest('.pagination__btn');
+    if (btn && !btn.disabled) {
+      goToPage(parseInt(btn.dataset.page));
+    }
+  });
+
+  fetchParticles(1);
+});
+</script>
+{% endblock %}

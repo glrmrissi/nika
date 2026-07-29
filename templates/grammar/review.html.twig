@@ -1,0 +1,282 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Particle Review | nika{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block stylesheets %}
+<style>
+.review-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - var(--topbar-height) - var(--space-gutter) * 2); padding: var(--space-gutter); }
+.review-progress-bar { width: 100%; max-width: 480px; height: 3px; background: var(--color-surface-container); overflow: hidden; margin-bottom: 32px; }
+.review-progress-bar__fill { height: 100%; background: var(--color-primary); transition: width var(--transition-normal); width: 0%; }
+.review-card { width: 100%; max-width: 480px; background: var(--color-surface-container-lowest); padding: 56px 32px 48px; text-align: center; box-shadow: var(--shadow-card); }
+.review-card__char { font-size: 64px; font-weight: 700; line-height: 1.1; color: var(--color-primary); margin-bottom: 8px; user-select: none; }
+.review-card__romaji { font-size: 18px; color: var(--color-secondary); margin-bottom: 4px; }
+.review-card__name { font-size: 14px; color: var(--color-on-surface-variant); margin-bottom: 24px; }
+.review-card__info { display: none; animation: review-reveal 0.2s var(--ease-out); }
+.review-card__info--visible { display: block; }
+@keyframes review-reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.review-card__section { margin-bottom: 16px; text-align: left; }
+.review-card__section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-secondary); margin-bottom: 4px; }
+.review-card__meaning { font-size: 14px; line-height: 1.6; color: var(--color-on-surface); text-align: left; }
+.review-card__usage { font-size: 13px; line-height: 1.6; color: var(--color-on-surface-variant); text-align: left; }
+.review-card__example { background: var(--color-surface-container); padding: 12px; margin-bottom: 8px; text-align: left; }
+.review-card__example-jp { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.review-card__example-reading { font-size: 12px; color: var(--color-secondary); margin-bottom: 2px; }
+.review-card__example-translation { font-size: 12px; color: var(--color-on-surface-variant); }
+.review-done-img { width: 120px; height: 120px; object-fit: contain; }
+.review-actions { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; width: 100%; max-width: 480px; }
+.review-actions__label { text-align: center; font-size: 14px; color: var(--color-secondary); }
+.review-actions__buttons { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.review-actions__show { width: 100%; }
+.review-actions__hint { text-align: center; font-size: 11px; color: var(--color-outline); margin-top: 4px; }
+.review-stats-hero { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 480px; margin-bottom: 24px; }
+.review-stats-hero__item { background: var(--color-surface-container-low); border-radius: var(--radius-lg); padding: 20px 16px; text-align: center; box-shadow: var(--shadow-card); animation: rStatFadeIn 400ms var(--ease-out) both; }
+.review-stats-hero__item:nth-child(1) { animation-delay: 0ms; }
+.review-stats-hero__item:nth-child(2) { animation-delay: 80ms; }
+.review-stats-hero__item:nth-child(3) { animation-delay: 160ms; }
+@keyframes rStatFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.review-stats-hero__number { font-size: 28px; font-weight: 700; line-height: 1.1; color: var(--color-on-surface); font-variant-numeric: tabular-nums; }
+.review-stats-hero__number--due { color: var(--color-primary); }
+.review-stats-hero__number--mastered { color: #22c55e; }
+.review-stats-hero__number--total { color: var(--color-on-surface-variant); }
+.review-stats-hero__label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-secondary); margin-top: 6px; }
+.review-stats-hero__item--loading { opacity: 0; animation: none; }
+.review-progress { text-align: center; font-size: 12px; color: var(--color-outline); margin-top: 16px; }
+@media (max-width: 768px) { .review-card { padding: 40px 20px 32px; } .review-card__char { font-size: 48px; } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="review-container">
+  <div class="review-progress-bar" id="progress-bar" style="display:none;">
+    <div class="review-progress-bar__fill" id="progress-fill"></div>
+  </div>
+
+  <div id="review-area" style="display:none;flex-direction:column;align-items:center;width:100%;">
+    <div class="review-card">
+      <div class="review-card__char" id="particle-char"></div>
+      <div class="review-card__romaji" id="particle-romaji"></div>
+      <div class="review-card__name" id="particle-name"></div>
+      <div class="review-card__info" id="particle-info">
+        <div class="review-card__section">
+          <div class="review-card__section-title">Meaning</div>
+          <div class="review-card__meaning" id="particle-meaning"></div>
+        </div>
+        <div class="review-card__section">
+          <div class="review-card__section-title">Usage</div>
+          <div class="review-card__usage" id="particle-usage"></div>
+        </div>
+        <div class="review-card__section">
+          <div class="review-card__section-title">Examples</div>
+          <div class="review-card__example" id="particle-example-1"></div>
+          <div class="review-card__example" id="particle-example-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-actions">
+      <button id="show-answer-btn" class="btn btn--primary review-actions__show">
+        Show Answer
+      </button>
+      <div id="quality-buttons" style="display:none;">
+        <p class="review-actions__label">How well did you know it?</p>
+        <div class="review-actions__buttons" id="quality-buttons-group">
+          <button class="btn btn--danger btn--sm" data-quality="0">Forgot</button>
+          <button class="btn btn--danger btn--sm" data-quality="1">Hard</button>
+          <button class="btn btn--medium btn--sm" data-quality="2">Okay</button>
+          <button class="btn btn--success btn--sm" data-quality="3">Good</button>
+          <button class="btn btn--success btn--sm" data-quality="4">Easy</button>
+          <button class="btn btn--success btn--sm" data-quality="5">Perfect</button>
+        </div>
+        <p class="review-actions__hint">Press 1-6 to rate</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-stats-hero" id="review-stats-hero">
+    <div class="review-stats-hero__item review-stats-hero__item--loading">
+      <div class="review-stats-hero__number review-stats-hero__number--due" id="r-stats-due">0</div>
+      <div class="review-stats-hero__label">Due</div>
+    </div>
+    <div class="review-stats-hero__item review-stats-hero__item--loading">
+      <div class="review-stats-hero__number review-stats-hero__number--total" id="r-stats-total">0</div>
+      <div class="review-stats-hero__label">Total</div>
+    </div>
+    <div class="review-stats-hero__item review-stats-hero__item--loading">
+      <div class="review-stats-hero__number review-stats-hero__number--mastered" id="r-stats-mastered">0</div>
+      <div class="review-stats-hero__label">Mastered</div>
+    </div>
+  </div>
+
+  <p class="review-progress" id="review-progress"></p>
+
+  <button class="btn btn--primary" style="margin-top:16px;" id="start-btn">
+    Start Review
+  </button>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script nonce="{{ csp_nonce('script') }}">
+var currentParticle = null;
+var reviewed = 0;
+var total = 0;
+var csrfToken = '{{ csrf_token('api') }}';
+
+function escapeHtml(str) {
+  if (!str) return '';
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+function startReview() {
+  document.getElementById('review-stats-hero').style.display = 'none';
+  document.getElementById('start-btn').style.display = 'none';
+  document.getElementById('review-area').style.display = 'flex';
+  document.getElementById('review-area').style.flexDirection = 'column';
+  document.getElementById('review-area').style.alignItems = 'center';
+  document.getElementById('progress-bar').style.display = 'block';
+  fetchNext();
+}
+
+function updateProgress() {
+  if (total === 0) return;
+  var pct = Math.round((reviewed / total) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function showParticle(p) {
+  document.getElementById('particle-char').textContent = p.particle;
+  document.getElementById('particle-romaji').textContent = p.romaji;
+  document.getElementById('particle-name').textContent = p.name;
+  document.getElementById('particle-meaning').textContent = p.meaning;
+  document.getElementById('particle-usage').textContent = p.usageNote;
+
+  var ex1 = document.getElementById('particle-example-1');
+  ex1.innerHTML = '<div class="review-card__example-jp">' + escapeHtml(p.exampleOne) + '</div>' +
+    '<div class="review-card__example-reading">' + escapeHtml(p.exampleOneReading) + '</div>' +
+    '<div class="review-card__example-translation">' + escapeHtml(p.exampleOneTranslation) + '</div>';
+
+  var ex2 = document.getElementById('particle-example-2');
+  ex2.innerHTML = '<div class="review-card__example-jp">' + escapeHtml(p.exampleTwo) + '</div>' +
+    '<div class="review-card__example-reading">' + escapeHtml(p.exampleTwoReading) + '</div>' +
+    '<div class="review-card__example-translation">' + escapeHtml(p.exampleTwoTranslation) + '</div>';
+
+  document.getElementById('particle-info').classList.remove('review-card__info--visible');
+  document.getElementById('quality-buttons').style.display = 'none';
+  document.getElementById('show-answer-btn').style.display = 'block';
+  document.getElementById('show-answer-btn').focus();
+  document.getElementById('review-progress').textContent = reviewed + ' reviewed';
+  updateProgress();
+}
+
+function showAnswer() {
+  document.getElementById('particle-info').classList.add('review-card__info--visible');
+  document.getElementById('quality-buttons').style.display = 'flex';
+  document.getElementById('quality-buttons').style.flexDirection = 'column';
+  document.getElementById('quality-buttons').style.alignItems = 'center';
+  document.getElementById('show-answer-btn').style.display = 'none';
+}
+
+function submitReview(quality) {
+  if (!currentParticle) return;
+
+  fetch('/api/grammar/review/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify({ particle_id: currentParticle.id, quality: quality })
+  }).then(function (r) { return r.json(); }).then(function () {
+    reviewed++;
+    fetchNext();
+  });
+}
+
+function showDone() {
+  document.getElementById('particle-char').innerHTML = '<img src="/assets/anime-happy.png" alt="done" class="review-done-img">';
+  document.getElementById('particle-info').classList.remove('review-card__info--visible');
+  document.getElementById('quality-buttons').style.display = 'none';
+  document.getElementById('show-answer-btn').style.display = 'none';
+  document.getElementById('review-progress').textContent = reviewed + ' particles reviewed';
+  document.getElementById('progress-fill').style.width = '100%';
+  setTimeout(function () {
+    document.getElementById('review-stats-hero').style.display = '';
+    loadStats();
+  }, 800);
+}
+
+function fetchNext() {
+  fetch('/api/grammar/review/next').then(function (r) { return r.json(); }).then(function (data) {
+    if (data.done) {
+      showDone();
+      return;
+    }
+    currentParticle = data.particle;
+    showParticle(currentParticle);
+  });
+}
+
+function animateNumber(el, target, duration) {
+  var start = performance.now();
+  var from = parseInt(el.textContent) || 0;
+  function tick(now) {
+    var progress = Math.min((now - start) / duration, 1);
+    var eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(from + (target - from) * eased);
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function loadStats() {
+  fetch('/api/grammar/review/count').then(function (r) { return r.json(); }).then(function (data) {
+    var items = document.querySelectorAll('.review-stats-hero__item');
+    items.forEach(function (item) { item.classList.remove('review-stats-hero__item--loading'); });
+    setTimeout(function () { animateNumber(document.getElementById('r-stats-due'), data.due, 600); }, 0);
+    setTimeout(function () { animateNumber(document.getElementById('r-stats-total'), data.total, 600); }, 80);
+    setTimeout(function () { animateNumber(document.getElementById('r-stats-mastered'), data.mastered, 600); }, 160);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  loadStats();
+
+  document.getElementById('show-answer-btn').addEventListener('click', showAnswer);
+
+  document.getElementById('quality-buttons-group').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-quality]');
+    if (btn) submitReview(parseInt(btn.dataset.quality));
+  });
+
+  document.getElementById('start-btn').addEventListener('click', function () {
+    fetch('/api/grammar/review/count').then(function (r) { return r.json(); }).then(function (data) {
+      total = data.total;
+      startReview();
+    });
+  });
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  var showBtn = document.getElementById('show-answer-btn');
+  var qualBtns = document.getElementById('quality-buttons');
+
+  if (e.key === ' ' || e.key === 'Enter') {
+    if (showBtn && showBtn.style.display !== 'none') {
+      e.preventDefault();
+      showAnswer();
+    }
+  }
+
+  if (qualBtns && qualBtns.style.display !== 'none') {
+    var map = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5 };
+    if (map[e.key] !== undefined) {
+      e.preventDefault();
+      submitReview(map[e.key]);
+    }
+  }
+});
+</script>
+{% endblock %}

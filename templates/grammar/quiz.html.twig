@@ -1,0 +1,256 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Particle Quiz | nika{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block stylesheets %}
+<style>
+.quiz-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - var(--topbar-height) - var(--space-gutter) * 2); padding: var(--space-gutter); }
+.quiz-progress-bar { width: 100%; max-width: 520px; height: 3px; background: var(--color-surface-container); overflow: hidden; margin-bottom: 32px; }
+.quiz-progress-bar__fill { height: 100%; background: var(--color-primary); transition: width var(--transition-normal); width: 0%; }
+.quiz-card { width: 100%; max-width: 520px; background: var(--color-surface-container-lowest); padding: 40px 32px; box-shadow: var(--shadow-card); }
+.quiz-question { font-size: 20px; font-weight: 600; text-align: center; margin-bottom: 28px; line-height: 1.4; color: var(--color-on-surface); }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; }
+.quiz-option { display: block; width: 100%; padding: 16px 20px; background: var(--color-surface-container); border: 2px solid var(--color-outline-variant); border-radius: var(--radius-md); font-size: 15px; font-weight: 500; color: var(--color-on-surface); cursor: pointer; text-align: left; transition: border-color var(--transition-fast), background var(--transition-fast), opacity var(--transition-fast); font-family: inherit; line-height: 1.4; }
+.quiz-option:hover { border-color: var(--color-primary); background: var(--color-surface-container-high); }
+.quiz-option:disabled { cursor: default; opacity: 0.5; }
+.quiz-option--correct { border-color: #22c55e !important; background: rgba(34, 197, 94, 0.1) !important; opacity: 1 !important; }
+.quiz-option--wrong { border-color: #ef4444 !important; background: rgba(239, 68, 68, 0.1) !important; opacity: 1 !important; }
+.quiz-option--reveal-correct { border-color: #22c55e !important; opacity: 1 !important; }
+.quiz-feedback { text-align: center; margin-top: 16px; font-size: 15px; font-weight: 600; }
+.quiz-feedback--correct { color: #22c55e; }
+.quiz-feedback--wrong { color: #ef4444; }
+.quiz-details { display: none; margin-top: 20px; animation: quiz-reveal 0.25s var(--ease-out); }
+.quiz-details--visible { display: block; }
+@keyframes quiz-reveal { from { opacity: 0; } to { opacity: 1; } }
+.quiz-details__section { margin-bottom: 12px; }
+.quiz-details__section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-secondary); margin-bottom: 4px; }
+.quiz-details__meaning { font-size: 14px; line-height: 1.6; color: var(--color-on-surface); }
+.quiz-details__usage { font-size: 13px; line-height: 1.6; color: var(--color-on-surface-variant); }
+.quiz-details__example { background: var(--color-surface-container); padding: 12px; margin-bottom: 6px; }
+.quiz-details__example-jp { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.quiz-details__example-reading { font-size: 12px; color: var(--color-secondary); margin-bottom: 2px; }
+.quiz-details__example-translation { font-size: 12px; color: var(--color-on-surface-variant); }
+.quiz-next-btn { margin-top: 20px; width: 100%; }
+.quiz-stats-hero { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 520px; margin-bottom: 24px; }
+.quiz-stats-hero__item { background: var(--color-surface-container-low); border-radius: var(--radius-lg); padding: 20px 16px; text-align: center; box-shadow: var(--shadow-card); animation: statFadeIn 400ms var(--ease-out) both; }
+.quiz-stats-hero__item:nth-child(1) { animation-delay: 0ms; }
+.quiz-stats-hero__item:nth-child(2) { animation-delay: 80ms; }
+.quiz-stats-hero__item:nth-child(3) { animation-delay: 160ms; }
+@keyframes statFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.quiz-stats-hero__number { font-size: 28px; font-weight: 700; line-height: 1.1; color: var(--color-on-surface); font-variant-numeric: tabular-nums; transition: color var(--transition-normal); }
+.quiz-stats-hero__number--due { color: var(--color-primary); }
+.quiz-stats-hero__number--mastered { color: #22c55e; }
+.quiz-stats-hero__number--total { color: var(--color-on-surface-variant); }
+.quiz-stats-hero__label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-secondary); margin-top: 6px; }
+.quiz-stats-hero__item--loading { opacity: 0; animation: none; }
+.quiz-stats { text-align: center; font-size: 12px; color: var(--color-outline); margin-top: 16px; }
+.quiz-done-img { width: 120px; height: 120px; object-fit: contain; }
+@media (max-width: 768px) { .quiz-card { padding: 28px 20px; } .quiz-question { font-size: 17px; } .quiz-option { padding: 14px 16px; font-size: 14px; } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="quiz-container">
+  <div class="quiz-progress-bar" id="progress-bar" style="display:none;">
+    <div class="quiz-progress-bar__fill" id="progress-fill"></div>
+  </div>
+
+  <div id="quiz-area" style="display:none;flex-direction:column;align-items:center;width:100%;">
+    <div class="quiz-card">
+      <div class="quiz-question" id="quiz-question"></div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-feedback" id="quiz-feedback"></div>
+      <div class="quiz-details" id="quiz-details"></div>
+    </div>
+    <button class="btn btn--primary quiz-next-btn" id="next-btn" style="display:none;">Next</button>
+  </div>
+
+  <div class="quiz-stats-hero" id="quiz-stats-hero">
+    <div class="quiz-stats-hero__item quiz-stats-hero__item--loading">
+      <div class="quiz-stats-hero__number quiz-stats-hero__number--due" id="stats-due">0</div>
+      <div class="quiz-stats-hero__label">Due</div>
+    </div>
+    <div class="quiz-stats-hero__item quiz-stats-hero__item--loading">
+      <div class="quiz-stats-hero__number quiz-stats-hero__number--total" id="stats-total">0</div>
+      <div class="quiz-stats-hero__label">Total</div>
+    </div>
+    <div class="quiz-stats-hero__item quiz-stats-hero__item--loading">
+      <div class="quiz-stats-hero__number quiz-stats-hero__number--mastered" id="stats-mastered">0</div>
+      <div class="quiz-stats-hero__label">Mastered</div>
+    </div>
+  </div>
+
+  <p class="quiz-stats" id="quiz-stats"></p>
+
+  <button class="btn btn--primary" style="margin-top:16px;" id="start-btn">
+    Start Quiz
+  </button>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script nonce="{{ csp_nonce('script') }}">
+var currentParticleId = null;
+var currentDirection = null;
+var answered = 0;
+var correctCount = 0;
+var csrfToken = '{{ csrf_token('api') }}';
+
+function escapeHtml(str) {
+  if (!str) return '';
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+function startQuiz() {
+  document.getElementById('quiz-stats-hero').style.display = 'none';
+  document.getElementById('start-btn').style.display = 'none';
+  document.getElementById('quiz-area').style.display = 'flex';
+  document.getElementById('quiz-area').style.flexDirection = 'column';
+  document.getElementById('quiz-area').style.alignItems = 'center';
+  document.getElementById('progress-bar').style.display = 'block';
+  fetchNext();
+}
+
+function updateProgress() {
+  var total = Math.max(1, answered);
+  var pct = Math.round((answered / total) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function renderOptions(options, direction) {
+  var container = document.getElementById('quiz-options');
+  var html = '';
+  options.forEach(function (opt, idx) {
+    html += '<button class="quiz-option" data-index="' + idx + '" data-direction="' + direction + '">' + escapeHtml(opt) + '</button>';
+  });
+  container.innerHTML = html;
+
+  container.querySelectorAll('.quiz-option').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (btn.disabled) return;
+      submitAnswer(btn.textContent, direction);
+    });
+  });
+}
+
+function showFeedback(correct, correctAnswer) {
+  var el = document.getElementById('quiz-feedback');
+  if (correct) {
+    el.textContent = 'Correct!';
+    el.className = 'quiz-feedback quiz-feedback--correct';
+  } else {
+    el.textContent = 'Incorrect. Answer: ' + correctAnswer;
+    el.className = 'quiz-feedback quiz-feedback--wrong';
+  }
+}
+
+function highlightOptions(correctAnswer, selected) {
+  var btns = document.querySelectorAll('.quiz-option');
+  btns.forEach(function (btn) {
+    btn.disabled = true;
+    if (btn.textContent === correctAnswer) {
+      btn.classList.add('quiz-option--correct');
+    } else if (btn.textContent === selected && btn.textContent !== correctAnswer) {
+      btn.classList.add('quiz-option--wrong');
+    } else {
+      btn.classList.add('quiz-option--reveal-correct');
+    }
+  });
+}
+
+function showDetails(p) {
+  var el = document.getElementById('quiz-details');
+  el.innerHTML =
+    '<div class="quiz-details__section"><div class="quiz-details__section-title">Meaning</div><div class="quiz-details__meaning">' + escapeHtml(p.meaning) + '</div></div>' +
+    '<div class="quiz-details__section"><div class="quiz-details__section-title">Usage</div><div class="quiz-details__usage">' + escapeHtml(p.usageNote) + '</div></div>' +
+    '<div class="quiz-details__section"><div class="quiz-details__section-title">Examples</div>' +
+    '<div class="quiz-details__example"><div class="quiz-details__example-jp">' + escapeHtml(p.exampleOne) + '</div><div class="quiz-details__example-reading">' + escapeHtml(p.exampleOneReading) + '</div><div class="quiz-details__example-translation">' + escapeHtml(p.exampleOneTranslation) + '</div></div>' +
+    '<div class="quiz-details__example"><div class="quiz-details__example-jp">' + escapeHtml(p.exampleTwo) + '</div><div class="quiz-details__example-reading">' + escapeHtml(p.exampleTwoReading) + '</div><div class="quiz-details__example-translation">' + escapeHtml(p.exampleTwoTranslation) + '</div></div></div>';
+  el.classList.add('quiz-details--visible');
+}
+
+function submitAnswer(selected, direction) {
+  fetch('/api/grammar/quiz/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify({ particle_id: currentParticleId, selected: selected, direction: direction })
+  }).then(function (r) { return r.json(); }).then(function (data) {
+    answered++;
+    if (data.correct) correctCount++;
+    showFeedback(data.correct, data.correct_answer);
+    highlightOptions(data.correct_answer, selected);
+    showDetails(data.particle);
+    document.getElementById('next-btn').style.display = 'block';
+    document.getElementById('next-btn').focus();
+    updateProgress();
+    document.getElementById('quiz-stats').textContent = correctCount + '/' + answered + ' correct';
+  });
+}
+
+function fetchNext() {
+  fetch('/api/grammar/quiz/next').then(function (r) { return r.json(); }).then(function (data) {
+    if (data.done) {
+      showDone();
+      return;
+    }
+    currentParticleId = data.particle_id;
+    currentDirection = data.direction;
+    document.getElementById('quiz-question').textContent = data.question;
+    renderOptions(data.options, data.direction);
+    document.getElementById('quiz-feedback').className = 'quiz-feedback';
+    document.getElementById('quiz-feedback').textContent = '';
+    document.getElementById('quiz-details').classList.remove('quiz-details--visible');
+    document.getElementById('quiz-details').innerHTML = '';
+    document.getElementById('next-btn').style.display = 'none';
+  });
+}
+
+function showDone() {
+  document.getElementById('quiz-question').style.display = 'none';
+  document.getElementById('quiz-options').innerHTML =
+    '<div style="text-align:center;padding:40px 0;"><img src="/assets/anime-happy.png" alt="done" class="quiz-done-img"><p style="margin-top:16px;font-size:16px;color:var(--color-on-surface);">Quiz complete!</p><p style="font-size:14px;color:var(--color-secondary);">' + correctCount + '/' + answered + ' correct</p></div>';
+  document.getElementById('quiz-feedback').style.display = 'none';
+  document.getElementById('quiz-details').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('quiz-stats').textContent = correctCount + '/' + answered + ' correct';
+  setTimeout(function () {
+    document.getElementById('quiz-stats-hero').style.display = '';
+    loadStats();
+  }, 800);
+}
+
+function animateNumber(el, target, duration) {
+  var start = performance.now();
+  var from = parseInt(el.textContent) || 0;
+  function tick(now) {
+    var progress = Math.min((now - start) / duration, 1);
+    var eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(from + (target - from) * eased);
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function loadStats() {
+  fetch('/api/grammar/quiz/stats').then(function (r) { return r.json(); }).then(function (data) {
+    var items = document.querySelectorAll('.quiz-stats-hero__item');
+    items.forEach(function (item) { item.classList.remove('quiz-stats-hero__item--loading'); });
+
+    setTimeout(function () { animateNumber(document.getElementById('stats-due'), data.due, 600); }, 0);
+    setTimeout(function () { animateNumber(document.getElementById('stats-total'), data.total, 600); }, 80);
+    setTimeout(function () { animateNumber(document.getElementById('stats-mastered'), data.mastered, 600); }, 160);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  loadStats();
+  document.getElementById('start-btn').addEventListener('click', startQuiz);
+  document.getElementById('next-btn').addEventListener('click', fetchNext);
+});
+</script>
+{% endblock %}
