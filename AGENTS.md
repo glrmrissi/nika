@@ -47,6 +47,17 @@ All `#[Route]` attribute (no YAML routing) except `/2fa` and `/2fa_check` in `co
 | GET | `/api/kanji` | `app_api_kanji` (JSON, query: `page`, `level`, `status`) |
 | GET | `/api/kanji/recent` | `app_api_kanji_recent` (JSON) |
 | POST | `/api/kanji/select-batch` | `app_kanji_select_batch` (JSON) |
+| GET | `/grammar` | `app_grammar_list` (HTML) |
+| GET | `/api/grammar` | `app_api_grammar` (JSON, query: `page`) |
+| GET | `/api/grammar/{id}` | `app_api_grammar_detail` (JSON) |
+| GET | `/grammar/review` | `app_grammar_review` (HTML) |
+| GET | `/api/grammar/review/next` | `app_api_grammar_review_next` (JSON) |
+| POST | `/api/grammar/review/submit` | `app_api_grammar_review_submit` (JSON) |
+| GET | `/api/grammar/review/count` | `app_api_grammar_review_count` (JSON) |
+| GET | `/grammar/quiz` | `app_grammar_quiz` (HTML) |
+| GET | `/api/grammar/quiz/next` | `app_api_grammar_quiz_next` (JSON) |
+| POST | `/api/grammar/quiz/submit` | `app_api_grammar_quiz_submit` (JSON) |
+| GET | `/api/grammar/quiz/stats` | `app_api_grammar_quiz_stats` (JSON) |
 
 ## Security & CSP
 
@@ -60,7 +71,7 @@ All `#[Route]` attribute (no YAML routing) except `/2fa` and `/2fa_check` in `co
 ## Database
 
 - `var/data.db` (SQLite). **No naming strategy** — entities use `#[ORM\Table(name: "lowercase_name")]`.
-- Tables: `user`, `kanji`, `review_log`, `user_kanji`, `name_history`.
+- Tables: `user`, `kanji`, `review_log`, `user_kanji`, `name_history`, `grammar_particle`, `user_particle`, `activity`, `activity_type`.
 
 ## SM-2 (SrsService)
 

@@ -42,9 +42,16 @@ security:
         - { path: ^/2fa_check$, roles: PUBLIC_ACCESS }
         - { path: ^/api/kanji/select-batch$, roles: ROLE_USER }
         - { path: ^/api/kanji$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/grammar/\d+$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/grammar$, roles: PUBLIC_ACCESS }
+        - { path: ^/grammar/review$, roles: ROLE_USER }
+        - { path: ^/api/grammar/review/, roles: ROLE_USER }
+        - { path: ^/grammar/quiz$, roles: ROLE_USER }
+        - { path: ^/api/grammar/quiz/, roles: ROLE_USER }
         - { path: ^/kanji/\d+/select$, roles: ROLE_USER }
         - { path: ^/kanji/\d+/toggle-done$, roles: ROLE_USER }
         - { path: ^/kanji$, roles: PUBLIC_ACCESS }
+        - { path: ^/grammar$, roles: PUBLIC_ACCESS }
         - { path: ^/profile$, roles: PUBLIC_ACCESS }
         - { path: ^/profile/edit$, roles: ROLE_USER }
         - { path: ^/profile/avatar/remove$, roles: ROLE_USER }

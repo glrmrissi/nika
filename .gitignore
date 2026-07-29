@@ -21,3 +21,5 @@ src/Controller/.gitignore
 
 public/uploads/*
 out.json
+
+MEMORY.md
