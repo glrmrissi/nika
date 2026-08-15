@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\User;
@@ -30,5 +32,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
+    }
+
+    public function findWithDiscordWebhook(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.discordWebhookUrl IS NOT NULL')
+            ->andWhere('u.discordWebhookUrl != :empty')
+            ->setParameter('empty', '')
+            ->getQuery()
+            ->getResult();
     }
 }

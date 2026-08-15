@@ -22,6 +22,11 @@
       </form>
     {% endif %}
 
+    <form id="discord-test-form" method="post" action="{{ path('app_profile_discord_test') }}" style="display:none;">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token('discord-test') }}">
+      <input type="hidden" name="webhook_url" id="discord-test-url" value="{{ app.user.discordWebhookUrl|default('') }}">
+    </form>
+
     {{ form_start(form, {attr: {novalidate: true, class: 'profile__form'}}) }}
 
       <div class="profile__upload-area" id="upload-area">
@@ -77,6 +82,18 @@
           {{ form_label(form.timezone, 'Timezone', {label_attr: {class: 'profile__label'}}) }}
           {{ form_widget(form.timezone, {attr: {class: 'profile__input'}}) }}
           {{ form_errors(form.timezone) }}
+        </div>
+
+        <div class="profile__field">
+          {{ form_label(form.discordWebhookUrl, 'Discord Webhook URL', {label_attr: {class: 'profile__label'}}) }}
+          {{ form_widget(form.discordWebhookUrl, {attr: {class: 'profile__input', placeholder: 'https://discord.com/api/webhooks/...', 'data-maxlength': 500}}) }}
+          <p class="profile__hint">Used to send daily review reminders to your Discord channel.</p>
+          {{ form_errors(form.discordWebhookUrl) }}
+
+          <button type="submit" form="discord-test-form" id="discord-test-btn" class="btn btn--sm btn--secondary" style="margin-top:12px;" {{ not app.user.discordWebhookUrl ? 'disabled' }}>
+            <i class="bi bi-send"></i> Send test reminder
+          </button>
+          <p class="profile__hint" id="discord-test-hint" style="margin-top:8px;{{ app.user.discordWebhookUrl ? ' display:none;' }}">Paste a URL to enable the test button. It must be a valid Discord webhook to work.</p>
         </div>
       </div>
 
@@ -185,6 +202,27 @@
           updatePreview(file);
         }
       });
+
+      var webhookInput = document.getElementById('profile_form_discordWebhookUrl');
+      var testBtn = document.getElementById('discord-test-btn');
+      var testHint = document.getElementById('discord-test-hint');
+      var testUrl = document.getElementById('discord-test-url');
+
+      if (webhookInput && testBtn) {
+        function updateTestButton() {
+          var url = webhookInput.value.trim();
+          var hasUrl = url.length > 0;
+          testBtn.disabled = !hasUrl;
+          if (testHint) {
+            testHint.style.display = hasUrl ? 'none' : 'block';
+          }
+          if (testUrl) {
+            testUrl.value = url;
+          }
+        }
+        webhookInput.addEventListener('input', updateTestButton);
+        updateTestButton();
+      }
     })();
   </script>
 {% endblock %}

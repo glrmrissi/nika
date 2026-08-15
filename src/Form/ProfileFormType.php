@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\User;
@@ -8,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
@@ -31,6 +34,18 @@ class ProfileFormType extends AbstractType
                 'placeholder' => 'UTC',
                 'choices' => $this->getTimezoneChoices(),
                 'label' => 'Timezone',
+            ])
+            ->add('discordWebhookUrl', UrlType::class, [
+                'required' => false,
+                'label' => 'Discord webhook URL',
+                'default_protocol' => 'https',
+                'constraints' => [
+                    new Length(max: 500, maxMessage: 'Webhook URL must be at most {{ limit }} characters'),
+                ],
+                'attr' => [
+                    'placeholder' => 'https://discord.com/api/webhooks/...',
+                    'maxlength' => 500,
+                ],
             ])
             ->add('kanjiClickAction', ChoiceType::class, [
                 'required' => true,

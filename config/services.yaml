@@ -34,6 +34,10 @@ services:
         arguments:
             $discordWebhookUrl: '%env(DISCORD_WEBHOOK_URL)%'
 
+    App\Command\SendDiscordRemindersCommand:
+        arguments:
+            $defaultUri: '%env(DEFAULT_URI)%'
+
     App\EventSubscriber\RateLimitSubscriber:
         arguments:
             $loginLimiter: '@limiter.login'

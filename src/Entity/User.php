@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\UserRepository;
@@ -68,10 +70,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $readme = null;
 
-    #[ORM\OneToMany(targetEntity: ReviewLog::class, mappedBy: 'reviewUser')]
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $discordWebhookUrl = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $discordReminderAt = null;
+
+    #[ORM\OneToMany(targetEntity: ReviewLog::class, mappedBy: 'reviewUser', orphanRemoval: true)]
     private Collection $reviewLogs;
 
-    #[ORM\OneToMany(targetEntity: UserKanji::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(targetEntity: UserKanji::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $userKanjis;
 
     #[ORM\OneToMany(targetEntity: NameHistory::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -138,6 +146,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
 
     public function getReadme(): ?string { return $this->readme; }
     public function setReadme(?string $readme): self { $this->readme = $readme; return $this; }
+
+    public function getDiscordWebhookUrl(): ?string { return $this->discordWebhookUrl; }
+    public function setDiscordWebhookUrl(?string $discordWebhookUrl): self { $this->discordWebhookUrl = $discordWebhookUrl; return $this; }
+
+    public function getDiscordReminderAt(): ?\DateTimeInterface { return $this->discordReminderAt; }
+    public function setDiscordReminderAt(?\DateTimeInterface $discordReminderAt): self { $this->discordReminderAt = $discordReminderAt; return $this; }
 
     public function isTotpEnabled(): bool { return $this->totpEnabled; }
     public function setTotpEnabled(bool $totpEnabled): self { $this->totpEnabled = $totpEnabled; return $this; }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\NameHistory;
@@ -8,6 +10,7 @@ use App\Form\ProfileFormType;
 use App\Repository\ActivityRepository;
 use App\Repository\KanjiRepository;
 use App\Repository\ReviewLogRepository;
+use App\Service\DiscordNotifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -15,6 +18,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class ProfileController extends AbstractController
 {
@@ -26,10 +30,10 @@ class ProfileController extends AbstractController
         $user = $this->getUser();
         $tz = $user->getEffectiveTimezone();
 
-        $reviewedToday = $activityRepo->countToday($tz);
+        $reviewedToday = $activityRepo->countToday($user, $tz);
         $streak = $activityRepo->countStreakDays($user, $tz);
         $totalKanji = $kanjiRepo->count([]);
-        $dueCount = $kanjiRepo->countDueReviews($user, $tz);
+        $dueCount = $kanjiRepo->countDueReviews($user);
         $thisWeek = $activityRepo->countThisWeek($user, $tz);
         $thisMonth = $activityRepo->countThisMonth($user, $tz);
         $thisYear = $activityRepo->countThisYear($user, $tz);
@@ -51,7 +55,16 @@ class ProfileController extends AbstractController
     #[Route('/profile/edit', name: 'app_profile_edit')]
     public function edit(Request $request, EntityManagerInterface $em): Response
     {
-        $user = $this->getUser();
+        $tokenUser = $this->getUser();
+        if (!$tokenUser instanceof User) {
+            throw $this->createNotFoundException('User not found.');
+        }
+
+        $user = $em->find(User::class, $tokenUser->getId());
+        if (!$user instanceof User) {
+            throw $this->createNotFoundException('User not found.');
+        }
+
         $oldName = $user->getName();
         $form = $this->createForm(ProfileFormType::class, $user);
         $form->handleRequest($request);
@@ -77,6 +90,7 @@ class ProfileController extends AbstractController
                 );
                 $user->setAvatarPath(self::AVATAR_DIR . '/' . $filename);
             }
+            $em->persist($user);
             $em->flush();
             $this->addFlash('success', 'Profile updated.');
             return $this->redirectToRoute('app_profile');
@@ -121,6 +135,43 @@ class ProfileController extends AbstractController
             'timezone' => $user->getEffectiveTimezone(),
             'createdAt' => $user->getCreatedAt()?->format('c'),
         ]);
+    }
+
+    #[Route('/profile/discord-webhook-test', name: 'app_profile_discord_test', methods: ['POST'])]
+    public function testDiscordWebhook(
+        Request $request,
+        DiscordNotifier $discord,
+        KanjiRepository $kanjiRepo,
+        ActivityRepository $activityRepo,
+        UrlGeneratorInterface $router,
+    ): Response {
+        $csrfToken = $request->request->get('_csrf_token');
+        if (!$csrfToken || !$this->isCsrfTokenValid('discord-test', (string) $csrfToken)) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+
+            return $this->redirectToRoute('app_profile_edit');
+        }
+
+        $user = $this->getUser();
+        $webhookUrl = $request->request->get('webhook_url') ?: $user->getDiscordWebhookUrl();
+
+        if (!$webhookUrl || !preg_match('~^https://(?:[a-zA-Z0-9-]+\.)?discord(?:app)?\.com/api/webhooks/\d+/[A-Za-z0-9_-]+/?(?:\?.*)?$~', $webhookUrl)) {
+            $this->addFlash('error', 'A valid Discord webhook URL is required.');
+
+            return $this->redirectToRoute('app_profile_edit');
+        }
+
+        $tz = $user->getEffectiveTimezone();
+        $dueCount = $kanjiRepo->countDueReviews($user);
+        $reviewedToday = $activityRepo->countToday($user, $tz);
+        $streak = $activityRepo->countStreakDays($user, $tz);
+        $reviewUrl = $router->generate('app_review', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $discord->sendReviewReminder($webhookUrl, $dueCount, $streak, $reviewedToday, $reviewUrl, true);
+
+        $this->addFlash('success', 'Test reminder sent to Discord.');
+
+        return $this->redirectToRoute('app_profile_edit');
     }
 
     private function removeOldAvatar(User $user): void
