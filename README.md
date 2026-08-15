@@ -84,7 +84,6 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Setup
 ```bash
 cp .env.example .env
 composer install
-php bin/console doctrine:database:create --if-not-exists
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console app:kanji:seed
 php bin/console app:admin:create
