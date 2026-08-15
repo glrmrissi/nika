@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\GrammarParticle;
@@ -33,7 +35,6 @@ class GrammarParticleRepository extends ServiceEntityRepository
 
     public function findRandomDueReview(UserParticle $userParticle = null): ?GrammarParticle
     {
-        // For review: gets all particles, we'll filter by due status in the controller
         return $this->createQueryBuilder('p')
             ->orderBy('RANDOM()')
             ->setMaxResults(1)
