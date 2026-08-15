@@ -12,7 +12,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand(name: 'app:grammar:seed', description: 'Popula o banco com partículas gramaticais')]
+#[AsCommand(name: 'app:grammar:seed', description: 'Seed the database with grammar particles')]
 class SeedGrammarCommand extends Command
 {
     public function __construct(
@@ -47,13 +47,13 @@ class SeedGrammarCommand extends Command
             if ($particle === '') continue;
 
             if (isset($seen[$particle])) {
-                $output->writeln("  <comment>Duplicado na lista: {$particle}</comment>");
+                $output->writeln("  <comment>Duplicate in list: {$particle}</comment>");
                 continue;
             }
             $seen[$particle] = true;
 
             if (isset($existingParticles[$particle])) {
-                $output->writeln("  <comment>Já existe: {$particle}</comment>");
+                $output->writeln("  <comment>Already exists: {$particle}</comment>");
                 continue;
             }
 
@@ -83,7 +83,7 @@ class SeedGrammarCommand extends Command
 
         $this->em->flush();
 
-        $output->writeln("<info>Inseridas {$count} partículas no banco.</info>");
+        $output->writeln("<info>Inserted {$count} grammar particles into the database.</info>");
 
         return Command::SUCCESS;
     }

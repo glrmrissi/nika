@@ -43,26 +43,26 @@ class DiscordNotifier
         }
 
         $color = $isTest ? 0x34c759 : 0xff453a;
-        $title = $isTest ? 'Webhook configurado' : 'Hora de revisar kanji';
+        $title = $isTest ? 'Webhook configured' : 'Time to review kanji';
         $description = $isTest
-            ? 'Este é um lembrete de teste. A partir de agora você recebe uma mensagem assim todos os dias.'
+            ? 'This is a test reminder. You will receive a message like this every day from now on.'
             : sprintf(
-                'Chegou a hora de revisar. Você tem **%d** kanji para revisar hoje e manter seu streak de **%d dia%s**.',
+                'Time to review. You have **%d** kanji to review today to maintain your **%d day%s** streak.',
                 $dueCount,
                 $streak,
                 $streak === 1 ? '' : 's',
             );
 
         $fields = [
-            ['name' => 'Para revisar', 'value' => (string) $dueCount, 'inline' => true],
-            ['name' => 'Streak', 'value' => $streak > 0 ? $streak . ' dias' : '0', 'inline' => true],
-            ['name' => 'Revisados hoje', 'value' => (string) $reviewedToday, 'inline' => true],
+            ['name' => 'To review', 'value' => (string) $dueCount, 'inline' => true],
+            ['name' => 'Streak', 'value' => $streak > 0 ? $streak . ' days' : '0', 'inline' => true],
+            ['name' => 'Reviewed today', 'value' => (string) $reviewedToday, 'inline' => true],
         ];
 
         if ($isTest) {
             $fields = [
-                ['name' => 'Para revisar', 'value' => (string) $dueCount, 'inline' => true],
-                ['name' => 'Streak', 'value' => $streak > 0 ? $streak . ' dias' : '0', 'inline' => true],
+                ['name' => 'To review', 'value' => (string) $dueCount, 'inline' => true],
+                ['name' => 'Streak', 'value' => $streak > 0 ? $streak . ' days' : '0', 'inline' => true],
             ];
         }
 
@@ -76,7 +76,7 @@ class DiscordNotifier
                     'color' => $color,
                     'fields' => $fields,
                     'footer' => [
-                        'text' => $isTest ? 'nika · teste de webhook' : 'nika · lembrete diário',
+                        'text' => $isTest ? 'nika · webhook test' : 'nika · daily reminder',
                     ],
                     'timestamp' => (new \DateTime('now', new \DateTimeZone('UTC')))->format(\DateTimeInterface::ATOM),
                 ],

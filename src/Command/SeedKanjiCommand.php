@@ -13,7 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 
-#[AsCommand(name: 'app:kanji:seed', description: 'Popula o banco com kanji JLPT N5~N1')]
+#[AsCommand(name: 'app:kanji:seed', description: 'Seed the database with JLPT N5 to N1 kanji')]
 class SeedKanjiCommand extends Command
 {
     public function __construct(
@@ -24,7 +24,7 @@ class SeedKanjiCommand extends Command
 
     protected function configure(): void
     {
-        $this->addOption('level', 'l', InputOption::VALUE_OPTIONAL, 'Filtrar por nível (N5, N4, N3, N2, N1)', null);
+        $this->addOption('level', 'l', InputOption::VALUE_OPTIONAL, 'Filter by level (N5, N4, N3, N2, N1)', null);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -58,13 +58,13 @@ class SeedKanjiCommand extends Command
             if ($char === '') continue;
 
             if (isset($seen[$char])) {
-                $output->writeln("  <comment>Duplicado na lista: {$char}</comment>");
+                $output->writeln("  <comment>Duplicate in list: {$char}</comment>");
                 continue;
             }
             $seen[$char] = true;
 
             if (isset($existingChars[$char])) {
-                $output->writeln("  <comment>Já existe: {$char}</comment>");
+                $output->writeln("  <comment>Already exists: {$char}</comment>");
                 continue;
             }
 
@@ -87,7 +87,7 @@ class SeedKanjiCommand extends Command
 
         $this->em->flush();
 
-        $output->writeln("<info>Inseridos {$count} kanji no banco.</info>");
+        $output->writeln("<info>Inserted {$count} kanji into the database.</info>");
 
         return Command::SUCCESS;
     }
