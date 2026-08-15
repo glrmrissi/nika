@@ -42,11 +42,11 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
-
       - name: Create environment
         run: cp .env.example .env
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
 
       - name: Run migrations
         run: php bin/console doctrine:migrations:migrate --no-interaction
