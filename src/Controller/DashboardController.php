@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\User;
@@ -21,7 +23,7 @@ class DashboardController extends AbstractController
 
         if ($user instanceof User) {
             $total = $kanjiRepo->countSelected($user);
-            $dueCount = $kanjiRepo->countDueReviews($user, $tz);
+            $dueCount = $kanjiRepo->countDueReviews($user);
             $byLevel = $kanjiRepo->countByLevel($user);
         } else {
             $total = 0;
@@ -29,7 +31,7 @@ class DashboardController extends AbstractController
             $byLevel = [];
         }
 
-        $reviewedToday = $activityRepo->countToday($tz);
+        $reviewedToday = $activityRepo->countToday($user, $tz);
         $streak = $activityRepo->countStreakDays($user, $tz);
 
         if ($user instanceof User) {

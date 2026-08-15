@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\User;
@@ -14,9 +16,9 @@ class UserParticleRepository extends ServiceEntityRepository
         parent::__construct($registry, UserParticle::class);
     }
 
-    public function findDue(User $user, string $timezone = 'UTC'): array
+    public function findDue(User $user): array
     {
-        $now = new \DateTime('now', new \DateTimeZone($timezone));
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
 
         return $this->createQueryBuilder('up')
             ->andWhere('up.user = :user')
@@ -28,9 +30,9 @@ class UserParticleRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function countDue(User $user, string $timezone = 'UTC'): int
+    public function countDue(User $user): int
     {
-        $now = new \DateTime('now', new \DateTimeZone($timezone));
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
 
         return (int) $this->createQueryBuilder('up')
             ->select('COUNT(up.id)')

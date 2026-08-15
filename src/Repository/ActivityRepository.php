@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\Activity;
@@ -14,7 +16,7 @@ class ActivityRepository extends ServiceEntityRepository
         parent::__construct($registry, Activity::class);
     }
 
-    public function countToday(string $timezone = 'UTC'): int
+    public function countToday(?User $user = null, string $timezone = 'UTC'): int
     {
         $tz = new \DateTimeZone($timezone);
         $today = new \DateTime('today', $tz);
@@ -22,14 +24,19 @@ class ActivityRepository extends ServiceEntityRepository
         $todayUtc = $today->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
         $tomorrowUtc = $tomorrow->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
 
-        return (int) $this->createQueryBuilder('a')
+        $qb = $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
             ->andWhere('a.createdAt >= :today')
             ->andWhere('a.createdAt < :tomorrow')
             ->setParameter('today', $todayUtc)
-            ->setParameter('tomorrow', $tomorrowUtc)
-            ->getQuery()
-            ->getSingleScalarResult();
+            ->setParameter('tomorrow', $tomorrowUtc);
+
+        if ($user) {
+            $qb->andWhere('a.user = :user')
+                ->setParameter('user', $user);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     public function countStreakDays(?User $user = null, string $timezone = 'UTC'): int
@@ -37,9 +44,13 @@ class ActivityRepository extends ServiceEntityRepository
         $conn = $this->getEntityManager()->getConnection();
         $table = 'activity';
 
-        $sql = "SELECT DISTINCT DATE(created_at) as day
+        $tz = new \DateTimeZone($timezone);
+        $offsetMinutes = $tz->getOffset(new \DateTime('now', $tz)) / 60;
+        $offsetClause = ($offsetMinutes >= 0 ? '+' : '') . (int) $offsetMinutes . ' minutes';
+
+        $sql = "SELECT DISTINCT DATE(datetime(created_at, '{$offsetClause}')) as day
                 FROM {$table}
-                WHERE DATE(created_at) >= DATE('now', '-60 days')";
+                WHERE DATE(datetime(created_at, '{$offsetClause}')) >= DATE(datetime('now', '{$offsetClause}'), '-60 days')";
 
         $params = [];
         if ($user) {
@@ -56,14 +67,11 @@ class ActivityRepository extends ServiceEntityRepository
         }
 
         $streak = 0;
-        $tz = new \DateTimeZone($timezone);
-        $today = new \DateTime('now', $tz);
-        $today->setTime(0, 0, 0);
-        $todayUtc = (clone $today)->setTimezone(new \DateTimeZone('UTC'));
+        $today = new \DateTime('today', $tz);
 
         foreach ($result as $day) {
-            $date = new \DateTime($day . ' 00:00:00', new \DateTimeZone('UTC'));
-            $diff = (int) $todayUtc->diff($date)->format('%r%a');
+            $date = new \DateTime($day, $tz);
+            $diff = (int) $today->diff($date)->format('%r%a');
 
             if ($diff === $streak) {
                 $streak++;
@@ -141,14 +149,17 @@ class ActivityRepository extends ServiceEntityRepository
         $conn = $this->getEntityManager()->getConnection();
         $table = 'activity';
 
-        $sql = "SELECT DATE(created_at) as day, COUNT(*) as count
+        $tz = new \DateTimeZone($timezone);
+        $offsetMinutes = $tz->getOffset(new \DateTime('now', $tz)) / 60;
+        $offsetClause = ($offsetMinutes >= 0 ? '+' : '') . (int) $offsetMinutes . ' minutes';
+
+        $sql = "SELECT DATE(datetime(created_at, '{$offsetClause}')) as day, COUNT(*) as count
                 FROM {$table}
                 WHERE user_id = :userId
                 AND created_at >= :start
                 GROUP BY day
                 ORDER BY day ASC";
 
-        $tz = new \DateTimeZone($timezone);
         $start = (new \DateTime('now', $tz))->modify('-364 days')->setTime(0, 0, 0);
         $start->setTimezone(new \DateTimeZone('UTC'));
 
@@ -164,7 +175,7 @@ class ActivityRepository extends ServiceEntityRepository
 
         $result = [];
         for ($i = 364; $i >= 0; $i--) {
-            $date = (new \DateTime('now', new \DateTimeZone('UTC')))->modify("-{$i} days")->format('Y-m-d');
+            $date = (new \DateTime('now', $tz))->modify("-{$i} days")->format('Y-m-d');
             $result[] = [
                 'date' => $date,
                 'count' => $map[$date] ?? 0,

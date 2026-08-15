@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\KanjiRepository;
@@ -38,10 +40,10 @@ class Kanji
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\OneToMany(targetEntity: ReviewLog::class, mappedBy: 'kanji', cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(targetEntity: ReviewLog::class, mappedBy: 'kanji', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $reviewLogs;
 
-    #[ORM\OneToMany(targetEntity: UserKanji::class, mappedBy: 'kanji', cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(targetEntity: UserKanji::class, mappedBy: 'kanji', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $userKanjis;
 
     public function __construct()

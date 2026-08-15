@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\Kanji;
@@ -14,9 +16,9 @@ class KanjiRepository extends ServiceEntityRepository
         parent::__construct($registry, Kanji::class);
     }
 
-    public function findDueReviews(User $user, string $timezone = 'UTC'): array
+    public function findDueReviews(User $user): array
     {
-        $now = new \DateTime('now', new \DateTimeZone($timezone));
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
 
         return $this->createQueryBuilder('k')
             ->join('k.userKanjis', 'uk')
@@ -29,9 +31,9 @@ class KanjiRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findDueReviewsByLevel(User $user, string $level, string $timezone = 'UTC'): array
+    public function findDueReviewsByLevel(User $user, string $level): array
     {
-        $now = new \DateTime('now', new \DateTimeZone($timezone));
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
 
         return $this->createQueryBuilder('k')
             ->join('k.userKanjis', 'uk')
@@ -46,9 +48,9 @@ class KanjiRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function countDueReviews(User $user, string $timezone = 'UTC'): int
+    public function countDueReviews(User $user): int
     {
-        $now = new \DateTime('now', new \DateTimeZone($timezone));
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
 
         return (int) $this->createQueryBuilder('k')
             ->select('COUNT(k.id)')
@@ -128,23 +130,34 @@ class KanjiRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findRandomDueReview(User $user, ?string $level = null, string $timezone = 'UTC'): ?Kanji
+    public function findRandomDueReview(User $user, ?string $level = null): ?Kanji
     {
-        $now = new \DateTime('now', new \DateTimeZone($timezone));
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
 
         $conn = $this->getEntityManager()->getConnection();
         $params = ['user_id' => $user->getId(), 'now' => $now->format('Y-m-d H:i:s')];
 
-        $sql = 'SELECT k.id FROM kanji k INNER JOIN user_kanji uk ON k.id = uk.kanji_id WHERE uk.user_id = :user_id AND uk.nextReviewAt <= :now';
-
+        $levelClause = '';
         if ($level) {
-            $sql .= ' AND k.jlptLevel = :level';
+            $levelClause = ' AND k.jlptLevel = :level';
             $params['level'] = $level;
         }
 
-        $sql .= ' ORDER BY RANDOM() LIMIT 1';
+        $sql = 'SELECT k.id FROM kanji k INNER JOIN user_kanji uk ON k.id = uk.kanji_id'
+            . ' WHERE uk.user_id = :user_id AND uk.nextReviewAt <= :now AND uk.state IN (1,3)'
+            . $levelClause
+            . ' ORDER BY uk.nextReviewAt ASC LIMIT 1';
 
         $id = $conn->fetchOne($sql, $params);
+
+        if (!$id) {
+            $sql = 'SELECT k.id FROM kanji k INNER JOIN user_kanji uk ON k.id = uk.kanji_id'
+                . ' WHERE uk.user_id = :user_id AND uk.nextReviewAt <= :now'
+                . $levelClause
+                . ' ORDER BY RANDOM() LIMIT 1';
+
+            $id = $conn->fetchOne($sql, $params);
+        }
 
         if (!$id) {
             return null;

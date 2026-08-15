@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\GrammarParticle;
@@ -93,16 +95,15 @@ class GrammarController extends AbstractController
     }
 
     #[Route('/api/grammar/review/next', name: 'app_api_grammar_review_next', methods: ['GET'])]
-    public function reviewNext(GrammarParticleRepository $repo, EntityManagerInterface $em): JsonResponse
+    public function reviewNext(GrammarParticleRepository $repo, EntityManagerInterface $em, SrsService $srs): JsonResponse
     {
         $user = $this->getUser();
         if (!$user) {
             return $this->json(['error' => 'Unauthorized'], 401);
         }
 
-        $tz = $user->getEffectiveTimezone();
         $upRepo = $em->getRepository(UserParticle::class);
-        $due = $upRepo->findDue($user, $tz);
+        $due = $upRepo->findDue($user);
 
         if (!empty($due)) {
             shuffle($due);
@@ -114,10 +115,20 @@ class GrammarController extends AbstractController
                 return $this->json(['done' => true]);
             }
             $particle = $all[array_rand($all)];
+            $up = $upRepo->findOneBy(['user' => $user, 'particle' => $particle]);
+            if (!$up) {
+                $up = new UserParticle();
+                $up->setUser($user);
+                $up->setParticle($particle);
+            }
         }
+
+        $stageLabels = ['New', 'Learning', 'Review', 'Relearning'];
 
         return $this->json([
             'done' => false,
+            'stage' => $stageLabels[$up->getState()] ?? 'New',
+            'intervals' => $srs->previewIntervals($up),
             'particle' => [
                 'id' => $particle->getId(),
                 'particle' => $particle->getParticle(),
@@ -159,16 +170,20 @@ class GrammarController extends AbstractController
             return $this->json(['error' => 'Too many requests'], 429);
         }
 
-        $data = json_decode($request->getContent(), true);
+        $data = $this->decodeJson($request);
+        if ($data === null) {
+            return $this->json(['error' => 'Invalid JSON body'], 400);
+        }
+
         $particleId = $data['particle_id'] ?? null;
-        $quality = $data['quality'] ?? null;
+        $rating = $data['rating'] ?? null;
 
         if (!is_int($particleId) || $particleId < 1) {
             return $this->json(['error' => 'Invalid particle_id'], 400);
         }
 
-        if (!is_int($quality) || $quality < 0 || $quality > 5) {
-            return $this->json(['error' => 'Quality must be 0-5'], 400);
+        if (!is_int($rating) || $rating < 1 || $rating > 4) {
+            return $this->json(['error' => 'Rating must be 1-4'], 400);
         }
 
         $particle = $em->getRepository(GrammarParticle::class)->find($particleId);
@@ -176,7 +191,11 @@ class GrammarController extends AbstractController
             return $this->json(['error' => 'Particle not found'], 404);
         }
 
-        $srs->reviewParticle($user, $particle, $quality);
+        try {
+            $srs->reviewParticle($user, $particle, $rating);
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], 409);
+        }
 
         return $this->json(['success' => true]);
     }
@@ -195,7 +214,6 @@ class GrammarController extends AbstractController
             return $this->json(['error' => 'Unauthorized'], 401);
         }
 
-        /** @var GrammarParticleRepository $repo */
         $repo = $em->getRepository(GrammarParticle::class);
         $all = $repo->findAll();
 
@@ -204,7 +222,14 @@ class GrammarController extends AbstractController
         }
 
         $upRepo = $em->getRepository(UserParticle::class);
-        $completedIds = array_map(fn($up) => $up->getParticle()->getId(), $upRepo->findBy(['user' => $user, 'isComplete' => true]));
+        $completedIds = $em->createQueryBuilder()
+            ->select('IDENTITY(up.particle)')
+            ->from(UserParticle::class, 'up')
+            ->andWhere('up.user = :user')
+            ->andWhere('up.isComplete = true')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleColumnResult();
         $available = array_values(array_filter($all, fn($p) => !in_array($p->getId(), $completedIds, true)));
 
         if (empty($available)) {
@@ -259,7 +284,11 @@ class GrammarController extends AbstractController
             return $this->json(['error' => 'Invalid CSRF token'], 403);
         }
 
-        $data = json_decode($request->getContent(), true);
+        $data = $this->decodeJson($request);
+        if ($data === null) {
+            return $this->json(['error' => 'Invalid JSON body'], 400);
+        }
+
         $particleId = $data['particle_id'] ?? null;
         $selected = $data['selected'] ?? null;
         $direction = $data['direction'] ?? null;
@@ -285,14 +314,18 @@ class GrammarController extends AbstractController
 
         $correct = $selected === $correctAnswer;
 
-        $quality = $correct ? 4 : 1;
+        $rating = $correct ? 3 : 1;
 
-        $srs->quizParticle($user, $particle, $quality);
+        try {
+            $srs->quizParticle($user, $particle, $rating);
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], 409);
+        }
 
         return $this->json([
             'correct' => $correct,
             'correct_answer' => $correctAnswer,
-            'quality' => $quality,
+            'rating' => $rating,
             'particle' => [
                 'id' => $particle->getId(),
                 'particle' => $particle->getParticle(),
@@ -319,8 +352,7 @@ class GrammarController extends AbstractController
             return $this->json(['due' => 0, 'total' => 0, 'mastered' => 0]);
         }
 
-        $tz = $user->getEffectiveTimezone();
-        $due = $em->getRepository(UserParticle::class)->countDue($user, $tz);
+        $due = $em->getRepository(UserParticle::class)->countDue($user);
         $total = $em->getRepository(GrammarParticle::class)->countAll();
         $mastered = $em->getRepository(UserParticle::class)->count(['user' => $user, 'isComplete' => true]);
 
@@ -335,13 +367,21 @@ class GrammarController extends AbstractController
             return $this->json(['due' => 0, 'total' => 0, 'mastered' => 0]);
         }
 
-        $tz = $user->getEffectiveTimezone();
-        $now = new \DateTime('now', new \DateTimeZone($tz));
-
-        $due = $em->getRepository(UserParticle::class)->countDue($user, $tz);
+        $due = $em->getRepository(UserParticle::class)->countDue($user);
         $total = $em->getRepository(GrammarParticle::class)->countAll();
         $mastered = $em->getRepository(UserParticle::class)->count(['user' => $user, 'isComplete' => true]);
 
         return $this->json(['due' => $due, 'total' => $total, 'mastered' => $mastered]);
+    }
+
+    private function decodeJson(Request $request): ?array
+    {
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return null;
+        }
+
+        return is_array($data) ? $data : null;
     }
 }

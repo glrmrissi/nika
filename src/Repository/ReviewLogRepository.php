@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\ReviewLog;
@@ -40,9 +42,13 @@ class ReviewLogRepository extends ServiceEntityRepository
         $table = $this->getClassMetadata()->getTableName();
         $col = $this->getClassMetadata()->getColumnName('reviewedAt');
 
-        $sql = "SELECT DISTINCT DATE({$col}) as day
+        $tz = new \DateTimeZone($timezone);
+        $offsetMinutes = $tz->getOffset(new \DateTime('now', $tz)) / 60;
+        $offsetClause = ($offsetMinutes >= 0 ? '+' : '') . (int) $offsetMinutes . ' minutes';
+
+        $sql = "SELECT DISTINCT DATE(datetime({$col}, '{$offsetClause}')) as day
                 FROM {$table}
-                WHERE DATE({$col}) >= DATE('now', '-60 days')";
+                WHERE DATE(datetime({$col}, '{$offsetClause}')) >= DATE(datetime('now', '{$offsetClause}'), '-60 days')";
 
         $params = [];
         if ($user) {
@@ -59,14 +65,11 @@ class ReviewLogRepository extends ServiceEntityRepository
         }
 
         $streak = 0;
-        $tz = new \DateTimeZone($timezone);
-        $today = new \DateTime('now', $tz);
-        $today->setTime(0, 0, 0);
-        $todayUtc = (clone $today)->setTimezone(new \DateTimeZone('UTC'));
+        $today = new \DateTime('today', $tz);
 
         foreach ($result as $day) {
-            $date = new \DateTime($day . ' 00:00:00', new \DateTimeZone('UTC'));
-            $diff = (int) $todayUtc->diff($date)->format('%r%a');
+            $date = new \DateTime($day, $tz);
+            $diff = (int) $today->diff($date)->format('%r%a');
 
             if ($diff === $streak) {
                 $streak++;
@@ -145,14 +148,17 @@ class ReviewLogRepository extends ServiceEntityRepository
         $table = $this->getClassMetadata()->getTableName();
         $col = $this->getClassMetadata()->getColumnName('reviewedAt');
 
-        $sql = "SELECT DATE({$col}) as day, COUNT(*) as count
+        $tz = new \DateTimeZone($timezone);
+        $offsetMinutes = $tz->getOffset(new \DateTime('now', $tz)) / 60;
+        $offsetClause = ($offsetMinutes >= 0 ? '+' : '') . (int) $offsetMinutes . ' minutes';
+
+        $sql = "SELECT DATE(datetime({$col}, '{$offsetClause}')) as day, COUNT(*) as count
                 FROM {$table}
                 WHERE reviewUser_id = :userId
                 AND {$col} >= :start
                 GROUP BY day
                 ORDER BY day ASC";
 
-        $tz = new \DateTimeZone($timezone);
         $start = (new \DateTime('now', $tz))->modify('-364 days')->setTime(0, 0, 0);
         $start->setTimezone(new \DateTimeZone('UTC'));
 
@@ -168,7 +174,7 @@ class ReviewLogRepository extends ServiceEntityRepository
 
         $result = [];
         for ($i = 364; $i >= 0; $i--) {
-            $date = (new \DateTime('now', new \DateTimeZone('UTC')))->modify("-{$i} days")->format('Y-m-d');
+            $date = (new \DateTime('now', $tz))->modify("-{$i} days")->format('Y-m-d');
             $result[] = [
                 'date' => $date,
                 'count' => $map[$date] ?? 0,
@@ -241,8 +247,8 @@ class ReviewLogRepository extends ServiceEntityRepository
                     $uk = $ukMap[$row['id']];
                     $row['mastery'] = $this->calculateMastery(
                         $uk->getRepetitions(),
-                        $uk->getInterval(),
-                        $uk->getEaseFactor(),
+                        $uk->getStability(),
+                        $uk->getDifficulty(),
                     );
                 }
                 $meanings = explode(',', $row['meanings']);
@@ -282,16 +288,16 @@ class ReviewLogRepository extends ServiceEntityRepository
         return (int) $conn->executeQuery($sql, $params)->fetchOne();
     }
 
-    private function calculateMastery(int $repetitions, int $interval, float $easeFactor): int
+    private function calculateMastery(int $repetitions, float $stability, float $difficulty): int
     {
         if ($repetitions === 0) {
             return 0;
         }
 
-        $score = ($repetitions * 15)
-               + (min(log($interval + 1, 2) * 8, 40))
-               + (($easeFactor - 1.3) * 25);
+        $stabilityScore = min(log($stability + 1, 2) * 16, 70);
+        $repsScore = min($repetitions * 4, 24);
+        $difficultyScore = max(0.0, (10.0 - $difficulty)) * 1.5;
 
-        return min(100, max(0, (int) round($score)));
+        return min(100, max(0, (int) round($stabilityScore + $repsScore + $difficultyScore)));
     }
 }
