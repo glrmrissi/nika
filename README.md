@@ -20,6 +20,17 @@ nika is a self-hosted Japanese learning app built with Symfony 8.1 and PHP 8.4. 
 
 > FSRS (Free Spaced Repetition Scheduler) models memory using stability, difficulty, and retrievability. nika wraps `scottlaurent/fsrs` with application-owned learning steps, deterministic interval fuzzing, and auto-mastery at stability >= 21 days.
 
+<table>
+  <tr>
+    <td align="center"><img src="public/assets/showcases/b-1.jpg" alt="Dark theme review" width="400"></td>
+    <td align="center"><img src="public/assets/showcases/b-2.jpg" alt="Dark theme kanji grid" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="public/assets/showcases/w-1.jpg" alt="Light theme review" width="400"></td>
+    <td align="center"><img src="public/assets/showcases/w-2.jpg" alt="Light theme kanji grid" width="400"></td>
+  </tr>
+</table>
+
 ## Features
 
 - **1091 kanji** from JLPT N5 through N1, each with onyomi, kunyomi, meanings, and stroke count
