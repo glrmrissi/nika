@@ -23,7 +23,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: ctype, iconv, sqlite3, intl
+          extensions: ctype, iconv, intl, mbstring, pdo_sqlite, sqlite3
           coverage: none
           tools: composer
 
@@ -48,10 +48,8 @@ jobs:
       - name: Create environment
         run: cp .env.example .env
 
-      - name: Create database and run migrations
-        run: |
-          php bin/console doctrine:database:create --if-not-exists
-          php bin/console doctrine:migrations:migrate --no-interaction
+      - name: Run migrations
+        run: php bin/console doctrine:migrations:migrate --no-interaction
 
       - name: Run full quality gate
         run: php scripts/check.php

@@ -49,7 +49,6 @@ if ($Setup -or -not (Test-Path '.env')) {
     Write-Host "==> Bootstrapping environment..." -ForegroundColor Cyan
     Copy-Item '.env.example' '.env' -ErrorAction SilentlyContinue
     composer install
-    php bin/console doctrine:database:create --if-not-exists
     php bin/console doctrine:migrations:migrate --no-interaction
     php bin/console app:kanji:seed
     php bin/console app:admin:create

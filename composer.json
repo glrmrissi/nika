@@ -80,7 +80,6 @@
         "setup": [
             "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "composer install",
-            "php bin/console doctrine:database:create --if-not-exists",
             "php bin/console doctrine:migrations:migrate --no-interaction",
             "php bin/console app:kanji:seed",
             "php bin/console app:admin:create",
@@ -94,7 +93,6 @@
         ],
         "db:reset": [
             "php bin/console doctrine:database:drop --force",
-            "php bin/console doctrine:database:create",
             "@composer db:migrate",
             "@composer db:seed"
         ],
