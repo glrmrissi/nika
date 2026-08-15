@@ -1,0 +1,6 @@
+#!/bin/sh
+# Run fast quality checks before allowing a commit.
+# This hook is intentionally lightweight: it lints PHP, Twig, container and YAML
+# and validates composer.json. It does NOT run database migrations or audits.
+
+exec php scripts/check.php --no-audit

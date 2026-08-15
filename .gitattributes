@@ -1,0 +1,10 @@
+# Normalize line endings for cross-platform development.
+* text=auto
+
+# Shell scripts and hooks must keep LF so they work in Unix/WSL and Git Bash on Windows.
+*.sh text eol=lf
+.githooks/* text eol=lf
+Makefile text eol=lf
+
+# PowerShell scripts should use CRLF on Windows checkouts.
+*.ps1 text eol=crlf
