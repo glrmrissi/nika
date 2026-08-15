@@ -13,6 +13,10 @@
 .review-card__char { font-size: 64px; font-weight: 700; line-height: 1.1; color: var(--color-primary); margin-bottom: 8px; user-select: none; }
 .review-card__romaji { font-size: 18px; color: var(--color-secondary); margin-bottom: 4px; }
 .review-card__name { font-size: 14px; color: var(--color-on-surface-variant); margin-bottom: 24px; }
+.review-card__stage { display: inline-block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-secondary); background: var(--color-surface-container); padding: 3px 10px; border-radius: var(--radius-full); margin-bottom: 16px; }
+.review-rate { display: inline-flex; align-items: baseline; gap: 6px; }
+.review-rate__iv { font-size: 11px; font-weight: 500; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.review-rate:focus-visible, .review-actions__show:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent); }
 .review-card__info { display: none; animation: review-reveal 0.2s var(--ease-out); }
 .review-card__info--visible { display: block; }
 @keyframes review-reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -55,6 +59,7 @@
 
   <div id="review-area" style="display:none;flex-direction:column;align-items:center;width:100%;">
     <div class="review-card">
+      <div class="review-card__stage" id="particle-stage"></div>
       <div class="review-card__char" id="particle-char"></div>
       <div class="review-card__romaji" id="particle-romaji"></div>
       <div class="review-card__name" id="particle-name"></div>
@@ -76,20 +81,18 @@
     </div>
 
     <div class="review-actions">
-      <button id="show-answer-btn" class="btn btn--primary review-actions__show">
+      <button type="button" id="show-answer-btn" class="btn btn--primary review-actions__show">
         Show Answer
       </button>
       <div id="quality-buttons" style="display:none;">
         <p class="review-actions__label">How well did you know it?</p>
         <div class="review-actions__buttons" id="quality-buttons-group">
-          <button class="btn btn--danger btn--sm" data-quality="0">Forgot</button>
-          <button class="btn btn--danger btn--sm" data-quality="1">Hard</button>
-          <button class="btn btn--medium btn--sm" data-quality="2">Okay</button>
-          <button class="btn btn--success btn--sm" data-quality="3">Good</button>
-          <button class="btn btn--success btn--sm" data-quality="4">Easy</button>
-          <button class="btn btn--success btn--sm" data-quality="5">Perfect</button>
+          <button type="button" class="btn btn--danger btn--sm review-rate" data-rating="1" aria-label="Rate Again">Again<span class="review-rate__iv" data-iv="1"></span></button>
+          <button type="button" class="btn btn--medium btn--sm review-rate" data-rating="2" aria-label="Rate Hard">Hard<span class="review-rate__iv" data-iv="2"></span></button>
+          <button type="button" class="btn btn--success btn--sm review-rate" data-rating="3" aria-label="Rate Good">Good<span class="review-rate__iv" data-iv="3"></span></button>
+          <button type="button" class="btn btn--success btn--sm review-rate" data-rating="4" aria-label="Rate Easy">Easy<span class="review-rate__iv" data-iv="4"></span></button>
         </div>
-        <p class="review-actions__hint">Press 1-6 to rate</p>
+        <p class="review-actions__hint">Press 1-4 to rate</p>
       </div>
     </div>
   </div>
@@ -109,9 +112,9 @@
     </div>
   </div>
 
-  <p class="review-progress" id="review-progress"></p>
+  <p class="review-progress" id="review-progress" aria-live="polite"></p>
 
-  <button class="btn btn--primary" style="margin-top:16px;" id="start-btn">
+  <button type="button" class="btn btn--primary" style="margin-top:16px;" id="start-btn">
     Start Review
   </button>
 </div>
@@ -120,8 +123,11 @@
 {% block javascripts %}
 <script nonce="{{ csp_nonce('script') }}">
 var currentParticle = null;
+var currentIntervals = {};
+var currentStage = '';
 var reviewed = 0;
 var total = 0;
+var submitting = false;
 var csrfToken = '{{ csrf_token('api') }}';
 
 function escapeHtml(str) {
@@ -143,11 +149,12 @@ function startReview() {
 
 function updateProgress() {
   if (total === 0) return;
-  var pct = Math.round((reviewed / total) * 100);
+  var pct = Math.min(100, Math.round((reviewed / total) * 100));
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
 function showParticle(p) {
+  submitting = false;
   document.getElementById('particle-char').textContent = p.particle;
   document.getElementById('particle-romaji').textContent = p.romaji;
   document.getElementById('particle-name').textContent = p.name;
@@ -165,6 +172,21 @@ function showParticle(p) {
     '<div class="review-card__example-translation">' + escapeHtml(p.exampleTwoTranslation) + '</div>';
 
   document.getElementById('particle-info').classList.remove('review-card__info--visible');
+
+  var stageEl = document.getElementById('particle-stage');
+  stageEl.textContent = currentStage;
+  stageEl.style.display = currentStage ? 'inline-block' : 'none';
+
+  var labels = { 1: 'Rate Again', 2: 'Rate Hard', 3: 'Rate Good', 4: 'Rate Easy' };
+  document.querySelectorAll('.review-rate').forEach(function (button) {
+    var rating = button.getAttribute('data-rating');
+    var interval = currentIntervals[rating] || '';
+    button.disabled = false;
+    button.setAttribute('aria-label', labels[rating] + (interval ? ', next review in ' + interval : ''));
+    var intervalEl = button.querySelector('.review-rate__iv');
+    if (intervalEl) intervalEl.textContent = interval ? '\u00B7 ' + interval : '';
+  });
+
   document.getElementById('quality-buttons').style.display = 'none';
   document.getElementById('show-answer-btn').style.display = 'block';
   document.getElementById('show-answer-btn').focus();
@@ -173,6 +195,7 @@ function showParticle(p) {
 }
 
 function showAnswer() {
+  if (submitting) return;
   document.getElementById('particle-info').classList.add('review-card__info--visible');
   document.getElementById('quality-buttons').style.display = 'flex';
   document.getElementById('quality-buttons').style.flexDirection = 'column';
@@ -180,21 +203,34 @@ function showAnswer() {
   document.getElementById('show-answer-btn').style.display = 'none';
 }
 
-function submitReview(quality) {
-  if (!currentParticle) return;
+function submitReview(rating) {
+  if (!currentParticle || submitting) return;
+
+  submitting = true;
+  document.querySelectorAll('.review-rate').forEach(function (button) { button.disabled = true; });
 
   fetch('/api/grammar/review/submit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-    body: JSON.stringify({ particle_id: currentParticle.id, quality: quality })
-  }).then(function (r) { return r.json(); }).then(function () {
+    body: JSON.stringify({ particle_id: currentParticle.id, rating: rating })
+  }).then(function (response) {
+    return response.json().then(function (data) {
+      if (!response.ok) throw new Error(data.error || 'Could not save review');
+      return data;
+    });
+  }).then(function () {
     reviewed++;
     fetchNext();
+  }).catch(function (error) {
+    submitting = false;
+    document.getElementById('review-progress').textContent = error.message;
+    document.querySelectorAll('.review-rate').forEach(function (button) { button.disabled = false; });
   });
 }
 
 function showDone() {
-  document.getElementById('particle-char').innerHTML = '<img src="/assets/anime-happy.png" alt="done" class="review-done-img">';
+  document.getElementById('particle-char').innerHTML = '<img src="/assets/anime-happy.png" alt="Review complete" width="120" height="120" class="review-done-img">';
+  document.getElementById('particle-stage').style.display = 'none';
   document.getElementById('particle-info').classList.remove('review-card__info--visible');
   document.getElementById('quality-buttons').style.display = 'none';
   document.getElementById('show-answer-btn').style.display = 'none';
@@ -207,13 +243,24 @@ function showDone() {
 }
 
 function fetchNext() {
-  fetch('/api/grammar/review/next').then(function (r) { return r.json(); }).then(function (data) {
+  fetch('/api/grammar/review/next').then(function (response) {
+    return response.json().then(function (data) {
+      if (!response.ok) throw new Error(data.error || 'Could not load the next card');
+      return data;
+    });
+  }).then(function (data) {
     if (data.done) {
       showDone();
       return;
     }
     currentParticle = data.particle;
+    currentIntervals = data.intervals || {};
+    currentStage = data.stage || '';
     showParticle(currentParticle);
+  }).catch(function (error) {
+    submitting = false;
+    document.getElementById('review-progress').textContent = error.message;
+    document.querySelectorAll('.review-rate').forEach(function (button) { button.disabled = false; });
   });
 }
 
@@ -245,8 +292,8 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('show-answer-btn').addEventListener('click', showAnswer);
 
   document.getElementById('quality-buttons-group').addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-quality]');
-    if (btn) submitReview(parseInt(btn.dataset.quality));
+    var btn = e.target.closest('[data-rating]');
+    if (btn) submitReview(parseInt(btn.dataset.rating));
   });
 
   document.getElementById('start-btn').addEventListener('click', function () {
@@ -271,7 +318,7 @@ document.addEventListener('keydown', function (e) {
   }
 
   if (qualBtns && qualBtns.style.display !== 'none') {
-    var map = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5 };
+    var map = { '1': 1, '2': 2, '3': 3, '4': 4 };
     if (map[e.key] !== undefined) {
       e.preventDefault();
       submitReview(map[e.key]);

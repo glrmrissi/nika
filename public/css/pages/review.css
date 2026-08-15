@@ -92,6 +92,32 @@
   color: var(--color-secondary);
 }
 
+.review-card__stage {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary);
+  background: var(--color-surface-container);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 16px;
+}
+
+.review-rate {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.review-rate__iv {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
 .review-actions {
   display: flex;
   flex-direction: column;
@@ -175,15 +201,23 @@
   text-align: center;
   background: var(--color-surface-container);
   color: var(--color-on-surface);
-  border: 2px solid var(--color-outline-variant);
-  transition: border-color var(--transition-fast);
+  border: none;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+  transition: box-shadow var(--transition-fast);
   font-family: var(--font-body);
   box-sizing: border-box;
 }
 
 .review-input:focus {
-  border-color: var(--color-primary);
   outline: none;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08), 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+.review-input:focus-visible,
+.review-rate:focus-visible,
+.review-actions__show:focus-visible,
+.review-next-btn:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
 }
 
 .review-input::placeholder {
@@ -217,6 +251,12 @@
 
 .review-result__text--wrong {
   color: var(--color-error);
+}
+
+.review-result__interval {
+  color: var(--color-secondary);
+  font-size: 13px;
+  margin-bottom: 12px;
 }
 
 .review-readings {

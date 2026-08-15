@@ -1,6 +1,10 @@
 var currentKanji = null;
+var currentStage = '';
 var reviewed = 0;
 var total = 0;
+var submitting = false;
+var answerSubmitted = false;
+var loadingNext = false;
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -20,22 +24,30 @@ function startReview() {
 
 function updateProgress() {
   if (total === 0) return;
-  var pct = Math.round((reviewed / total) * 100);
+  var pct = Math.min(100, Math.round((reviewed / total) * 100));
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
 function showKanji(kanji) {
+  submitting = false;
+  answerSubmitted = false;
   document.getElementById('kanji-char').textContent = kanji.character;
+
+  var stageEl = document.getElementById('kanji-stage');
+  stageEl.textContent = currentStage;
+  stageEl.style.display = currentStage ? 'inline-block' : 'none';
 
   var inputArea = document.getElementById('input-area');
   var resultArea = document.getElementById('result-area');
   var nextBtn = document.getElementById('next-btn');
   var input = document.getElementById('reading-input');
+  var checkBtn = document.getElementById('check-btn');
 
   inputArea.style.display = 'flex';
   resultArea.style.display = 'none';
   nextBtn.style.display = 'none';
-
+  input.disabled = false;
+  checkBtn.disabled = false;
   input.value = '';
   input.focus();
 
@@ -67,7 +79,7 @@ function getCorrectReadings(kanji) {
 }
 
 function checkAnswer() {
-  if (!currentKanji) return;
+  if (!currentKanji || submitting || answerSubmitted) return;
 
   var input = document.getElementById('reading-input');
   var answer = normalizeReading(input.value);
@@ -77,22 +89,39 @@ function checkAnswer() {
   var correct = readings.some(function(r) {
     return normalizeReading(r.value) === answer;
   });
+  var rating = correct ? 3 : 1;
 
-  var quality = correct ? 4 : 1;
+  submitting = true;
+  input.disabled = true;
+  document.getElementById('check-btn').disabled = true;
 
   fetch('/review/submit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-    body: JSON.stringify({ kanji_id: currentKanji.id, quality: quality })
+    body: JSON.stringify({ kanji_id: currentKanji.id, rating: rating })
+  }).then(function(response) {
+    return response.json().then(function(data) {
+      if (!response.ok) throw new Error(data.error || 'Could not save review');
+      return data;
+    });
   }).then(function() {
-    showResult(correct, readings);
+    submitting = false;
+    answerSubmitted = true;
+    showResult(correct, readings, rating);
+  }).catch(function(error) {
+    submitting = false;
+    input.disabled = false;
+    document.getElementById('check-btn').disabled = false;
+    document.getElementById('review-progress').textContent = error.message;
+    input.focus();
   });
 }
 
-function showResult(correct, readings) {
+function showResult(correct, readings, rating) {
   var inputArea = document.getElementById('input-area');
   var resultArea = document.getElementById('result-area');
   var resultText = document.getElementById('result-text');
+  var resultInterval = document.getElementById('result-interval');
   var readingsList = document.getElementById('readings-list');
   var nextBtn = document.getElementById('next-btn');
 
@@ -108,6 +137,8 @@ function showResult(correct, readings) {
     resultText.className = 'review-result__text review-result__text--wrong';
   }
 
+  resultInterval.textContent = 'Next review: ' + (currentIntervals[rating] || 'soon');
+
   var html = '';
   readings.forEach(function(r) {
     var cls = r.type === 'onyomi' ? 'review-readings__item review-readings__item--onyomi' : 'review-readings__item review-readings__item--kunyomi';
@@ -117,25 +148,42 @@ function showResult(correct, readings) {
 
   reviewed++;
   updateProgress();
+  nextBtn.focus();
 }
 
 function nextKanji() {
+  if (loadingNext || submitting || !answerSubmitted) return;
   fetchNext();
 }
 
 function fetchNext() {
-  fetch('/review/next').then(function(r) { return r.json(); }).then(function(data) {
+  if (loadingNext) return;
+  loadingNext = true;
+
+  fetch('/review/next').then(function(response) {
+    return response.json().then(function(data) {
+      if (!response.ok) throw new Error(data.error || 'Could not load the next card');
+      return data;
+    });
+  }).then(function(data) {
+    loadingNext = false;
     if (data.done) {
       showDone();
       return;
     }
     currentKanji = data.kanji;
+    currentStage = data.stage || '';
+    currentIntervals = data.intervals || {};
     showKanji(currentKanji);
+  }).catch(function(error) {
+    loadingNext = false;
+    document.getElementById('review-progress').textContent = error.message;
   });
 }
 
 function showDone() {
-  document.getElementById('kanji-char').innerHTML = '<img src="/assets/anime-happy.png" alt="done" class="review-done-img">';
+  document.getElementById('kanji-char').innerHTML = '<img src="/assets/anime-happy.png" alt="Review complete" width="120" height="120" class="review-done-img">';
+  document.getElementById('kanji-stage').style.display = 'none';
   document.getElementById('input-area').style.display = 'none';
   document.getElementById('result-area').style.display = 'none';
   document.getElementById('next-btn').style.display = 'none';
@@ -147,15 +195,9 @@ document.addEventListener('keydown', function(e) {
   if (e.target.tagName !== 'INPUT') return;
 
   var inputArea = document.getElementById('input-area');
-  var resultArea = document.getElementById('result-area');
-
-  if (e.key === 'Enter') {
+  if (e.key === 'Enter' && inputArea && inputArea.style.display !== 'none') {
     e.preventDefault();
-    if (inputArea && inputArea.style.display !== 'none') {
-      checkAnswer();
-    } else if (resultArea && resultArea.style.display !== 'none') {
-      nextKanji();
-    }
+    checkAnswer();
   }
 });
 

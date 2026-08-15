@@ -16,6 +16,7 @@
 
     <div id="review-area" style="display:none;flex-direction:column;align-items:center;width:100%;">
       <div class="review-card">
+        <div class="review-card__stage" id="kanji-stage"></div>
         <div class="review-card__char" id="kanji-char"></div>
         <div class="review-card__info" id="kanji-info">
           <div class="review-card__reading">
@@ -28,28 +29,26 @@
       </div>
 
       <div class="review-actions">
-        <button id="show-answer-btn" class="btn btn--primary review-actions__show">
+        <button type="button" id="show-answer-btn" class="btn btn--primary review-actions__show">
           Show Answer
         </button>
         <div id="quality-buttons" style="display:none;">
           <p class="review-actions__label">How well did you know it?</p>
           <div class="review-actions__buttons" id="quality-buttons-group">
-            <button class="btn btn--danger btn--sm" data-quality="0">Forgot</button>
-            <button class="btn btn--danger btn--sm" data-quality="1">Hard</button>
-            <button class="btn btn--medium btn--sm" data-quality="2">Okay</button>
-            <button class="btn btn--success btn--sm" data-quality="3">Good</button>
-            <button class="btn btn--success btn--sm" data-quality="4">Easy</button>
-            <button class="btn btn--success btn--sm" data-quality="5">Perfect</button>
+            <button type="button" class="btn btn--danger btn--sm review-rate" data-rating="1" aria-label="Rate Again">Again<span class="review-rate__iv" data-iv="1"></span></button>
+            <button type="button" class="btn btn--medium btn--sm review-rate" data-rating="2" aria-label="Rate Hard">Hard<span class="review-rate__iv" data-iv="2"></span></button>
+            <button type="button" class="btn btn--success btn--sm review-rate" data-rating="3" aria-label="Rate Good">Good<span class="review-rate__iv" data-iv="3"></span></button>
+            <button type="button" class="btn btn--success btn--sm review-rate" data-rating="4" aria-label="Rate Easy">Easy<span class="review-rate__iv" data-iv="4"></span></button>
           </div>
-          <p class="review-actions__hint">Press 1-6 to rate</p>
+          <p class="review-actions__hint">Press 1-4 to rate</p>
         </div>
       </div>
     </div>
 
-    <p class="review-progress" id="review-progress"></p>
+    <p class="review-progress" id="review-progress" aria-live="polite"></p>
 
     {% if dueCount > 0 %}
-      <button class="btn btn--primary" style="margin-top:16px;" id="start-btn">
+      <button type="button" class="btn btn--primary" style="margin-top:16px;" id="start-btn">
         Start Review ({{ dueCount }})
       </button>
     {% else %}
@@ -63,8 +62,9 @@
 <script nonce="{{ csp_nonce('script') }}">var total = {{ dueCount }}; var csrfToken = '{{ csrf_token('api') }}';
 document.getElementById('show-answer-btn').addEventListener('click', showAnswer);
 document.getElementById('quality-buttons-group').addEventListener('click', function(e) {
-  var btn = e.target.closest('[data-quality]');
-  if (btn) submitReview(parseInt(btn.dataset.quality));
+  var btn = e.target.closest('[data-rating]');
+  if (btn) submitReview(parseInt(btn.dataset.rating));
 });
-document.getElementById('start-btn').addEventListener('click', startReview);</script>
+var startBtn = document.getElementById('start-btn');
+if (startBtn) startBtn.addEventListener('click', startReview);</script>
 {% endblock %}

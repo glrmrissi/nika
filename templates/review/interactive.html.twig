@@ -16,27 +16,29 @@
 
     <div id="review-area" style="display:none;flex-direction:column;align-items:center;width:100%;">
       <div class="review-card">
+        <div class="review-card__stage" id="kanji-stage"></div>
         <div class="review-card__char" id="kanji-char"></div>
-        <i class="bi bi-info-circle review-card__info-icon" data-tooltip="Type the reading in hiragana or katakana. On&#39;yomi are in katakana, kun&#39;yomi are in hiragana."></i>
+        <i class="bi bi-info-circle review-card__info-icon" role="img" aria-label="Reading input instructions: type the reading in hiragana or katakana. On'yomi are in katakana; kun'yomi are in hiragana." data-tooltip="Type the reading in hiragana or katakana. On&#39;yomi are in katakana, kun&#39;yomi are in hiragana."></i>
         <div class="review-input-area" id="input-area">
-          <input type="text" class="review-input" id="reading-input" placeholder="Reading..." autocomplete="off" spellcheck="false">
-          <button class="btn btn--primary review-input__btn" id="check-btn">Check</button>
+          <input type="text" class="review-input" id="reading-input" name="reading" placeholder="Reading…" autocomplete="off" spellcheck="false" inputmode="text" aria-label="Reading">
+          <button type="button" class="btn btn--primary review-input__btn" id="check-btn">Check</button>
         </div>
         <div class="review-result" id="result-area" style="display:none;">
-          <p class="review-result__text" id="result-text"></p>
+          <p class="review-result__text" id="result-text" aria-live="polite"></p>
+          <p class="review-result__interval" id="result-interval" aria-live="polite"></p>
           <div class="review-readings" id="readings-list"></div>
         </div>
       </div>
 
-      <button class="btn btn--primary review-next-btn" id="next-btn" style="display:none;">
+      <button type="button" class="btn btn--primary review-next-btn" id="next-btn" style="display:none;">
         Next
       </button>
     </div>
 
-    <p class="review-progress" id="review-progress"></p>
+    <p class="review-progress" id="review-progress" aria-live="polite"></p>
 
     {% if dueCount > 0 %}
-      <button class="btn btn--primary" style="margin-top:16px;" id="start-btn">
+      <button type="button" class="btn btn--primary" style="margin-top:16px;" id="start-btn">
         Start Interactive Review ({{ dueCount }})
       </button>
     {% else %}
@@ -50,5 +52,6 @@
 <script nonce="{{ csp_nonce('script') }}">var total = {{ dueCount }}; var csrfToken = '{{ csrf_token('api') }}';
 document.getElementById('check-btn').addEventListener('click', checkAnswer);
 document.getElementById('next-btn').addEventListener('click', nextKanji);
-document.getElementById('start-btn').addEventListener('click', startReview);</script>
+var startBtn = document.getElementById('start-btn');
+if (startBtn) startBtn.addEventListener('click', startReview);</script>
 {% endblock %}
