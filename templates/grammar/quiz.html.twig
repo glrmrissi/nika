@@ -241,7 +241,7 @@ function fetchNext() {
 function showDone() {
   document.getElementById('quiz-question').style.display = 'none';
   document.getElementById('quiz-options').innerHTML =
-    '<div style="text-align:center;padding:40px 0;"><img src="/assets/anime-happy.png" alt="Quiz complete" width="120" height="120" class="quiz-done-img"><p style="margin-top:16px;font-size:16px;color:var(--color-on-surface);">Quiz complete!</p><p style="font-size:14px;color:var(--color-secondary);">' + correctCount + '/' + answered + ' correct</p></div>';
+    '<div style="text-align:center;padding:40px 0;"><p style="font-size:16px;color:var(--color-on-surface);">Quiz complete!</p><p style="font-size:14px;color:var(--color-secondary);">' + correctCount + '/' + answered + ' correct</p></div>';
   document.getElementById('quiz-feedback').style.display = 'none';
   document.getElementById('quiz-details').style.display = 'none';
   document.getElementById('next-btn').style.display = 'none';

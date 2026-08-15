@@ -182,7 +182,7 @@ function fetchNext() {
 }
 
 function showDone() {
-  document.getElementById('kanji-char').innerHTML = '<img src="/assets/anime-happy.png" alt="Review complete" width="120" height="120" class="review-done-img">';
+  document.getElementById('kanji-char').textContent = 'Done';
   document.getElementById('kanji-stage').style.display = 'none';
   document.getElementById('input-area').style.display = 'none';
   document.getElementById('result-area').style.display = 'none';

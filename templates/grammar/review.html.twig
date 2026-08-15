@@ -229,7 +229,7 @@ function submitReview(rating) {
 }
 
 function showDone() {
-  document.getElementById('particle-char').innerHTML = '<img src="/assets/anime-happy.png" alt="Review complete" width="120" height="120" class="review-done-img">';
+  document.getElementById('particle-char').textContent = 'Done';
   document.getElementById('particle-stage').style.display = 'none';
   document.getElementById('particle-info').classList.remove('review-card__info--visible');
   document.getElementById('quality-buttons').style.display = 'none';
