@@ -1,6 +1,8 @@
 {
+    "name": "nika/kanji-review",
+    "description": "Personalized Japanese kanji and grammar review app.",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
@@ -11,10 +13,11 @@
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6",
         "endroid/qr-code-bundle": "^7.0",
-        "league/commonmark": "^2.8",
+        "league/commonmark": "^2.10",
         "nelmio/security-bundle": "^3.9",
         "scheb/2fa-bundle": "^8.6",
         "scheb/2fa-totp": "^8.6",
+        "scottlaurent/fsrs": "^0.1",
         "symfony/asset": "8.1.*",
         "symfony/console": "8.1.*",
         "symfony/dotenv": "8.1.*",
@@ -32,6 +35,11 @@
         "symfony/yaml": "8.1.*",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/twig": "^2.12|^3.0"
+    },
+    "require-dev": {
+        "symfony/debug-bundle": "8.1.*",
+        "symfony/maker-bundle": "^1.67",
+        "symfony/web-profiler-bundle": "8.1.*"
     },
     "config": {
         "allow-plugins": {
@@ -69,6 +77,43 @@
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
         },
+        "setup": [
+            "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "composer install",
+            "php bin/console doctrine:database:create --if-not-exists",
+            "php bin/console doctrine:migrations:migrate --no-interaction",
+            "php bin/console app:kanji:seed",
+            "php bin/console app:admin:create",
+            "@auto-scripts"
+        ],
+        "dev": "php -S localhost:8000 -t public",
+        "db:migrate": "php bin/console doctrine:migrations:migrate --no-interaction",
+        "db:seed": [
+            "php bin/console app:kanji:seed",
+            "php bin/console app:grammar:seed"
+        ],
+        "db:reset": [
+            "php bin/console doctrine:database:drop --force",
+            "php bin/console doctrine:database:create",
+            "@composer db:migrate",
+            "@composer db:seed"
+        ],
+        "lint:php": "php scripts/lint.php",
+        "lint:twig": "php bin/console lint:twig templates",
+        "lint:container": "php bin/console lint:container",
+        "lint:yaml": "php bin/console lint:yaml config",
+        "lint": [
+            "@lint:php",
+            "@lint:twig",
+            "@lint:container",
+            "@lint:yaml"
+        ],
+        "check": "php scripts/check.php",
+        "test": "@check",
+        "setup:hooks": [
+            "git config core.hooksPath .githooks",
+            "php -r \"chmod('.githooks/pre-commit', 0755);\""
+        ],
         "post-install-cmd": [
             "@auto-scripts"
         ],

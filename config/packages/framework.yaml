@@ -42,6 +42,11 @@ framework:
     #esi: true
     #fragments: true
 
+when@dev:
+    framework:
+        session:
+            cookie_secure: false
+
 when@test:
     framework:
         test: true
